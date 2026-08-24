@@ -1,0 +1,6 @@
+{
+  "name": "Slinky Snake",
+  "description": "An attractive, highly engaging, cartoonish 2D snake game with 18 custom skins, 25 adventure levels, 23 star achievements, 55+ foods & power-ups, retro sound effects, and fluid touch controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
