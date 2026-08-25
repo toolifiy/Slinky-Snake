@@ -106,6 +106,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun selectLevel(idx: Int) {
+        if (idx in 0 until GameData.LEVEL_CONFIGS.size) {
+            _uiState.update { it.copy(currentLevelIdx = idx) }
+            SoundSynth.playClick()
+        }
+    }
+
     fun selectSkin(skin: Skin) {
         prefs.setSelectedSkinId(skin.id)
         val played = prefs.addPlayedSkinId(skin.id)
@@ -163,16 +170,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         SoundSynth.playClick()
     }
 
+    private val directionQueue = ArrayDeque<Direction>()
+
     fun onDirectionInput(dir: Direction) {
-        val current = _uiState.value.direction
-        val isValid = when (dir) {
-            Direction.UP -> current != Direction.DOWN
-            Direction.DOWN -> current != Direction.UP
-            Direction.LEFT -> current != Direction.RIGHT
-            Direction.RIGHT -> current != Direction.LEFT
-        }
-        if (isValid) {
-            nextDirection = dir
+        if (directionQueue.size < 2) {
+            val lastPending = directionQueue.lastOrNull() ?: nextDirection
+            val isValid = when (dir) {
+                Direction.UP -> lastPending != Direction.DOWN && lastPending != Direction.UP
+                Direction.DOWN -> lastPending != Direction.UP && lastPending != Direction.DOWN
+                Direction.LEFT -> lastPending != Direction.RIGHT && lastPending != Direction.LEFT
+                Direction.RIGHT -> lastPending != Direction.LEFT && lastPending != Direction.RIGHT
+            }
+            if (isValid) {
+                directionQueue.addLast(dir)
+            }
         }
     }
 
@@ -180,6 +191,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         SoundSynth.playClick()
         val initialSnake = listOf(Position(10, 8), Position(10, 9), Position(10, 10))
         nextDirection = Direction.UP
+        directionQueue.clear()
 
         val currentLevelConfig = GameData.LEVEL_CONFIGS[_uiState.value.currentLevelIdx]
         val activeObstacles = if (_uiState.value.gameMode == GameMode.CLASSIC) emptyList() else currentLevelConfig.obstacles
@@ -322,6 +334,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val state = _uiState.value
         val snake = state.snake
         if (snake.isEmpty()) return
+
+        if (directionQueue.isNotEmpty()) {
+            nextDirection = directionQueue.removeFirst()
+        }
 
         val dir = nextDirection
         val head = snake[0]
@@ -584,12 +600,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun createExplosion(x: Int, y: Int, color: Long, count: Int = 10) {
-        val startX = x * 20f + 10f
-        val startY = y * 20f + 10f
+        val startX = x.toFloat() + 0.5f
+        val startY = y.toFloat() + 0.5f
         val newParticles = mutableListOf<Particle>()
         for (i in 0 until count) {
             val angle = Math.random() * Math.PI * 2.0
-            val speed = (Math.random() * 3.0 + 2.0).toFloat()
+            val speed = (Math.random() * 0.15 + 0.08).toFloat()
             newParticles.add(
                 Particle(
                     id = System.nanoTime() + i,
@@ -611,8 +627,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val ft = FloatingText(
             id = System.nanoTime(),
             text = text,
-            x = x * 20f + 10f,
-            y = y * 20f + 5f,
+            x = x.toFloat() + 0.5f,
+            y = y.toFloat() + 0.2f,
             color = color,
             life = 30
         )
@@ -654,9 +670,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (p.life < p.maxLife) p else null
             }
 
-            // Floating texts decay
+            // Floating texts decay (drift upward smoothly)
             val updatedTexts = state.floatingTexts.mapNotNull { ft ->
-                ft.y -= 0.5f
+                ft.y -= 0.025f
                 ft.life -= 1
                 if (ft.life > 0) ft else null
             }

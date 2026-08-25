@@ -3,9 +3,9 @@ package com.example.slinkysnake.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,10 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -32,16 +29,20 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -51,9 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slinkysnake.data.GameData
 import com.example.slinkysnake.model.GameMode
-import com.example.slinkysnake.ui.components.DpadControls
+import com.example.slinkysnake.ui.components.ArcadeDpadControls
 import com.example.slinkysnake.ui.components.GameBoardCanvas
-import com.example.slinkysnake.ui.components.swipeController
+import com.example.slinkysnake.ui.components.arcadeSwipeController
 import com.example.slinkysnake.viewmodel.GameUiState
 import com.example.slinkysnake.viewmodel.GameViewModel
 
@@ -66,162 +67,197 @@ fun GamePlayScreen(
     val currentTheme = GameData.BOARD_THEMES.find { it.id == uiState.boardThemeId } ?: GameData.BOARD_THEMES[0]
     val currentLevel = GameData.LEVEL_CONFIGS[uiState.currentLevelIdx]
 
+    // Outer Navy Background (#131C2E) with Golden Outer Frame (#F59E0B)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color(0xFF131C2E)
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .swipeController(uiState.direction) { dir -> viewModel.onDirectionInput(dir) }
+                .background(Color(0xFF131C2E))
+                .border(6.dp, Color(0xFFF59E0B)) // Golden Outer Frame
+                .arcadeSwipeController(uiState.direction) { dir -> viewModel.onDirectionInput(dir) }
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // 1. Top HUD
+                // 1. TOP GAME BOARD AREA
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(width = 3.dp, color = Color(0xFF0F172A))
+                ) {
+                    // Checkered Game Board
+                    GameBoardCanvas(
+                        snake = uiState.snake,
+                        prevSnake = uiState.prevSnake,
+                        moveProgress = uiState.moveProgress,
+                        food = uiState.food,
+                        obstacles = if (uiState.gameMode == GameMode.CLASSIC) emptyList() else currentLevel.obstacles,
+                        selectedSkin = uiState.selectedSkin,
+                        gameMode = uiState.gameMode,
+                        levelConfig = currentLevel,
+                        boardThemeColor1 = currentTheme.color1,
+                        boardThemeColor2 = currentTheme.color2,
+                        activeEffects = uiState.activeEffects,
+                        particles = uiState.particles,
+                        floatingTexts = uiState.floatingTexts,
+                        screenShake = uiState.screenShake,
+                        direction = uiState.direction,
+                        mouthOpen = uiState.mouthOpen,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Top-Left Floating Active Power-Up Banner (e.g. 🔥 Speed Boost (4.2s))
+                    val activeBoostText = when {
+                        uiState.activeEffects.chili > 0L -> "🔥 Speed Boost (${String.format("%.1f", uiState.activeEffects.chili / 1000f)}s)"
+                        uiState.activeEffects.booster > 0L -> "⚡ Hyper Surge (${String.format("%.1f", uiState.activeEffects.booster / 1000f)}s)"
+                        uiState.activeEffects.immortal > 0L -> "👻 Ghost Shield (${String.format("%.1f", uiState.activeEffects.immortal / 1000f)}s)"
+                        uiState.activeEffects.doublePoints > 0L -> "💎 2X Points (${String.format("%.1f", uiState.activeEffects.doublePoints / 1000f)}s)"
+                        uiState.activeEffects.grape > 0L -> "🍇 Chill Slow (${String.format("%.1f", uiState.activeEffects.grape / 1000f)}s)"
+                        uiState.comboCount > 1 -> "🔥 ${uiState.comboMultiplier}x Combo (${uiState.comboCount})"
+                        else -> null
+                    }
+
+                    if (activeBoostText != null) {
+                        Box(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .align(Alignment.TopStart)
+                                .shadow(6.dp, RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(Color(0xFFEA580C), Color(0xFFF59E0B))
+                                    )
+                                )
+                                .border(1.5.dp, Color(0xFFFEF08A), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = activeBoostText,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                }
+
+                // 2. SCORE & HIGHSCORE BAR (Exact match to screenshot)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                        .background(Color(0xFF0A0F1D))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = {
-                            viewModel.exitGame()
-                            onBackToHome()
-                        },
-                        modifier = Modifier.testTag("game_back_button")
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    // Left: SCORE: 30 PTS
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "SCORE: ",
+                            color = Color(0xFF64748B),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "${uiState.score} PTS",
+                            color = Color(0xFFA855F7), // Vibrant Purple
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
                     }
 
-                    // Score Card
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "Score: ${uiState.score}",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            if (uiState.gameMode == GameMode.LEVELS) {
-                                Text(
-                                    text = "/ ${currentLevel.targetScore}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                                )
+                    // Right: HIGHSCORE: 1986 PTS
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "HIGHSCORE: ",
+                            color = Color(0xFF64748B),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "${uiState.highScore} PTS",
+                            color = Color(0xFF10B981), // Vibrant Mint Green
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+
+                // 3. ACTION BUTTONS ROW (🚪 EXIT & ⚙️ MENU)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 🚪 EXIT Button (Red Rounded Capsule)
+                    Box(
+                        modifier = Modifier
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFEF4444))
+                            .border(2.dp, Color(0xFFDC2626), RoundedCornerShape(16.dp))
+                            .clickable {
+                                viewModel.exitGame()
+                                onBackToHome()
                             }
-                        }
-                    }
-
-                    // Mode / Level Badge
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                            .padding(horizontal = 24.dp, vertical = 10.dp)
+                            .testTag("game_exit_button"),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (uiState.gameMode == GameMode.LEVELS) "Lvl ${currentLevel.level}" else "Classic",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            text = "🚪 EXIT",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
                         )
                     }
 
-                    // Pause Button
-                    IconButton(
-                        onClick = { viewModel.togglePause() },
-                        modifier = Modifier.testTag("game_pause_button")
+                    // ⚙️ MENU Button (Yellow / Amber Rounded Capsule)
+                    Box(
+                        modifier = Modifier
+                            .shadow(6.dp, RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFF59E0B))
+                            .border(2.dp, Color(0xFFD97706), RoundedCornerShape(16.dp))
+                            .clickable {
+                                viewModel.togglePause()
+                            }
+                            .padding(horizontal = 24.dp, vertical = 10.dp)
+                            .testTag("game_menu_button"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            if (uiState.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
-                            contentDescription = if (uiState.isPaused) "Resume" else "Pause"
+                        Text(
+                            text = "⚙️ MENU",
+                            color = Color(0xFF0F172A),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
                         )
                     }
                 }
 
-                // 2. Active Effects Badges & Combos
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Power Up Badges
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (uiState.activeEffects.immortal > 0L) {
-                            EffectBadge(emoji = "👻", label = "${uiState.activeEffects.immortal / 1000}s", color = Color(0xFFA78BFA))
-                        }
-                        if (uiState.activeEffects.chili > 0L) {
-                            EffectBadge(emoji = "🔥", label = "${uiState.activeEffects.chili / 1000}s", color = Color(0xFFF97316))
-                        }
-                        if (uiState.activeEffects.booster > 0L) {
-                            EffectBadge(emoji = "🧪", label = "${uiState.activeEffects.booster / 1000}s", color = Color(0xFF3B82F6))
-                        }
-                        if (uiState.activeEffects.doublePoints > 0L) {
-                            EffectBadge(emoji = "💎", label = "${uiState.activeEffects.doublePoints / 1000}s", color = Color(0xFFF472B6))
-                        }
-                        if (uiState.activeEffects.grape > 0L) {
-                            EffectBadge(emoji = "🍇", label = "${uiState.activeEffects.grape / 1000}s", color = Color(0xFF8B5CF6))
-                        }
-                    }
-
-                    // Combo Multiplier
-                    if (uiState.comboCount > 1) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFEF4444)
-                        ) {
-                            Text(
-                                text = "🔥 ${uiState.comboMultiplier}x Combo (${uiState.comboCount})",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                // 3. Central Game Board
-                GameBoardCanvas(
-                    snake = uiState.snake,
-                    prevSnake = uiState.prevSnake,
-                    moveProgress = uiState.moveProgress,
-                    food = uiState.food,
-                    obstacles = if (uiState.gameMode == GameMode.CLASSIC) emptyList() else currentLevel.obstacles,
-                    selectedSkin = uiState.selectedSkin,
-                    gameMode = uiState.gameMode,
-                    levelConfig = currentLevel,
-                    boardThemeColor1 = currentTheme.color1,
-                    boardThemeColor2 = currentTheme.color2,
-                    activeEffects = uiState.activeEffects,
-                    particles = uiState.particles,
-                    floatingTexts = uiState.floatingTexts,
-                    screenShake = uiState.screenShake,
-                    direction = uiState.direction,
-                    mouthOpen = uiState.mouthOpen,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-
-                // 4. On-screen Controls (D-Pad)
-                DpadControls(
+                // 4. ARCADE CONTROLLER (D-PAD)
+                ArcadeDpadControls(
                     currentDirection = uiState.direction,
-                    onDirectionChange = { dir -> viewModel.onDirectionInput(dir) }
+                    onDirectionChange = { dir -> viewModel.onDirectionInput(dir) },
+                    onPauseClick = { viewModel.togglePause() },
+                    isPaused = uiState.isPaused,
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
 
@@ -230,7 +266,7 @@ fun GamePlayScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.45f)),
+                        .background(Color.Black.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -242,56 +278,23 @@ fun GamePlayScreen(
                 }
             }
 
-            // Pause Overlay
+            // Pause / Menu Overlay (Exact match to screenshot)
             if (uiState.isPaused && uiState.countdown == null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.6f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        modifier = Modifier.padding(24.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(28.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Text(
-                                text = "Game Paused ⏸️",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Button(
-                                onClick = { viewModel.togglePause() },
-                                modifier = Modifier.fillMaxWidth().testTag("resume_button"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Resume")
-                            }
-                            FilledTonalButton(
-                                onClick = { viewModel.startGame() },
-                                modifier = Modifier.fillMaxWidth().testTag("restart_button"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Restart")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.exitGame()
-                                    onBackToHome()
-                                },
-                                modifier = Modifier.fillMaxWidth().testTag("quit_button"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Main Menu")
-                            }
-                        }
-                    }
-                }
+                InGameMenuDialog(
+                    currentThemeId = uiState.boardThemeId,
+                    speedMultiplier = uiState.speedMultiplier,
+                    isSoundEnabled = uiState.isSoundEnabled,
+                    soundVolume = uiState.soundVolume,
+                    allowedFruits = uiState.allowedFruits,
+                    selectedSkin = uiState.selectedSkin,
+                    onSelectTheme = { themeId -> viewModel.setBoardTheme(themeId) },
+                    onSpeedChange = { speed -> viewModel.setSpeedMultiplier(speed) },
+                    onSoundToggle = { enabled -> viewModel.setSoundEnabled(enabled) },
+                    onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
+                    onFruitToggle = { fruitType -> viewModel.toggleFruit(fruitType) },
+                    onSelectSkin = { skin -> viewModel.selectSkin(skin) },
+                    onDismiss = { viewModel.togglePause() }
+                )
             }
 
             // Game Over Overlay
@@ -299,68 +302,77 @@ fun GamePlayScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.7f)),
+                        .background(Color.Black.copy(alpha = 0.75f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
                         shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        modifier = Modifier.padding(24.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                        modifier = Modifier.padding(20.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(28.dp),
+                            modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Game Over! 💥",
+                                text = "GAME OVER 💥",
                                 style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFEF4444)
                             )
 
-                            Surface(
-                                shape = RoundedCornerShape(18.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                            if (uiState.score >= uiState.highScore && uiState.score > 0) {
+                                Surface(
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = Color(0xFFF59E0B).copy(alpha = 0.2f),
+                                    border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFF59E0B))
                                 ) {
-                                    Text(
-                                        text = "Final Score: ${uiState.score}",
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Text(
-                                        text = "Best: ${uiState.highScore}  •  Foods Eaten: ${uiState.foodEatenCount}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFF59E0B))
+                                        Text(
+                                            text = "NEW HIGH SCORE! 🎉",
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFFF59E0B),
+                                            fontSize = 13.sp
+                                        )
+                                    }
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("Final Score", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                    Text("${uiState.score}", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("Foods Eaten", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                    Text("${uiState.foodEatenCount}", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
 
                             Button(
                                 onClick = { viewModel.startGame() },
-                                modifier = Modifier.fillMaxWidth().testTag("game_over_play_again"),
-                                shape = RoundedCornerShape(14.dp)
+                                modifier = Modifier.fillMaxWidth().testTag("play_again_button"),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                shape = RoundedCornerShape(16.dp)
                             ) {
-                                Icon(Icons.Default.Replay, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Play Again")
-                            }
-
-                            FilledTonalButton(
-                                onClick = { viewModel.respawnGame() },
-                                modifier = Modifier.fillMaxWidth().testTag("game_over_respawn"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Ghost Respawn (5s Ghost)")
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(Icons.Default.Replay, contentDescription = null)
+                                    Text("PLAY AGAIN", fontWeight = FontWeight.Black)
+                                }
                             }
 
                             OutlinedButton(
@@ -368,158 +380,15 @@ fun GamePlayScreen(
                                     viewModel.exitGame()
                                     onBackToHome()
                                 },
-                                modifier = Modifier.fillMaxWidth().testTag("game_over_menu"),
-                                shape = RoundedCornerShape(14.dp)
+                                modifier = Modifier.fillMaxWidth().testTag("game_over_home_button"),
+                                shape = RoundedCornerShape(16.dp)
                             ) {
-                                Text("Main Menu")
+                                Text("HOME MENU", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
                 }
             }
-
-            // Level Clear Overlay
-            if (uiState.showLevelClear) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.7f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        modifier = Modifier.padding(24.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(28.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "Level Complete! 🎉",
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                text = "Awesome slithering! You reached the target score of ${currentLevel.targetScore} pts!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Button(
-                                onClick = { viewModel.nextLevel() },
-                                modifier = Modifier.fillMaxWidth().testTag("next_level_button"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Next Level ➡️")
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.exitGame()
-                                    onBackToHome()
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Main Menu")
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Victory Overlay (Game Complete!)
-            if (uiState.showVictory) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.8f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        modifier = Modifier.padding(24.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(28.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.EmojiEvents,
-                                contentDescription = null,
-                                tint = Color(0xFFF59E0B),
-                                modifier = Modifier.size(56.dp)
-                            )
-
-                            Text(
-                                text = "Grand Champion! 👑",
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFFF59E0B),
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = "You have conquered all 25 levels of Slinky Snake Adventures! You are a certified Snake Master!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Button(
-                                onClick = {
-                                    viewModel.setGameMode(GameMode.CLASSIC)
-                                    viewModel.startGame()
-                                },
-                                modifier = Modifier.fillMaxWidth().testTag("victory_play_classic"),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Play Endless Classic 🌟")
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.exitGame()
-                                    onBackToHome()
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text("Main Menu")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EffectBadge(
-    emoji: String,
-    label: String,
-    color: Color
-) {
-    Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = color.copy(alpha = 0.2f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(emoji, fontSize = 12.sp)
-            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = color)
         }
     }
 }

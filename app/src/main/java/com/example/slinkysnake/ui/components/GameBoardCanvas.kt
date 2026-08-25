@@ -1,27 +1,25 @@
 package com.example.slinkysnake.ui.components
 
 import android.graphics.Paint
+import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import com.example.slinkysnake.model.ActiveEffects
 import com.example.slinkysnake.model.Direction
 import com.example.slinkysnake.model.FloatingText
@@ -60,180 +58,263 @@ fun GameBoardCanvas(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .padding(8.dp)
-            .shadow(12.dp, RoundedCornerShape(24.dp))
-            .clip(RoundedCornerShape(24.dp))
     ) {
         val boardWidth = size.width
         val cellWidth = boardWidth / GRID_SIZE
 
-        // Screen shake
-        val shakeX = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2f else 0f
-        val shakeY = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2f else 0f
+        // Screen Shake calculation
+        val shakeX = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2.5f else 0f
+        val shakeY = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2.5f else 0f
 
-        // 1. Draw Board Background Tiles
-        val col1 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol1) else Color(boardThemeColor1)
-        val col2 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol2) else Color(boardThemeColor2)
+        val time = System.currentTimeMillis()
+
+        // 1. Draw Checkered Mint/Lime Board Tiles (Exactly like Google Snake / Toolifiy arcade)
+        val col1 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol1) else Color(0xFFD3F5DD)
+        val col2 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol2) else Color(0xFFB8ECCD)
 
         for (x in 0 until GRID_SIZE) {
             for (y in 0 until GRID_SIZE) {
                 val tileColor = if ((x + y) % 2 == 0) col1 else col2
+                val tileLeft = x * cellWidth + shakeX
+                val tileTop = y * cellWidth + shakeY
+
                 drawRect(
                     color = tileColor,
-                    topLeft = Offset(x * cellWidth + shakeX, y * cellWidth + shakeY),
+                    topLeft = Offset(tileLeft, tileTop),
                     size = Size(cellWidth, cellWidth)
                 )
             }
         }
 
         // 2. Draw Obstacles (Level Mode)
-        if (gameMode == GameMode.LEVELS) {
-            val obstacleColor = Color(0xFF1E293B)
-            val obstacleAccent = Color(levelConfig.theme.borderColor)
+        if (gameMode == GameMode.LEVELS && obstacles.isNotEmpty()) {
+            val obstacleBaseColor = Color(0xFF1E293B)
+            val obstacleLightColor = Color(0xFF334155)
+            val obstacleAccentColor = Color(levelConfig.theme.borderColor)
+
             for (obs in obstacles) {
                 val left = obs.x * cellWidth + shakeX
                 val top = obs.y * cellWidth + shakeY
+
+                // Drop Shadow
                 drawRoundRect(
-                    color = obstacleColor,
-                    topLeft = Offset(left + 2f, top + 2f),
-                    size = Size(cellWidth - 4f, cellWidth - 4f),
+                    color = Color(0x50000000),
+                    topLeft = Offset(left + 2f, top + 3f),
+                    size = Size(cellWidth - 3f, cellWidth - 3f),
                     cornerRadius = CornerRadius(6f, 6f)
                 )
+
+                // Main Stone Block
                 drawRoundRect(
-                    color = obstacleAccent,
-                    topLeft = Offset(left + 2f, top + 2f),
-                    size = Size(cellWidth - 4f, cellWidth - 4f),
+                    color = obstacleBaseColor,
+                    topLeft = Offset(left + 1f, top + 1f),
+                    size = Size(cellWidth - 2f, cellWidth - 2f),
+                    cornerRadius = CornerRadius(6f, 6f)
+                )
+
+                // Neon Outline Accent
+                drawRoundRect(
+                    color = obstacleAccentColor.copy(alpha = 0.8f),
+                    topLeft = Offset(left + 1f, top + 1f),
+                    size = Size(cellWidth - 2f, cellWidth - 2f),
                     cornerRadius = CornerRadius(6f, 6f),
-                    style = Stroke(width = 2.5f)
+                    style = Stroke(width = 1.5f)
                 )
             }
         }
 
-        // 3. Draw Food
+        // 3. Draw Food (Croissant / Apple / Powerup inside green circular badge like screenshot)
         if (food != null) {
             val fx = food.position.x * cellWidth + cellWidth / 2f + shakeX
-            val fy = food.position.y * cellWidth + cellWidth / 2f + shakeY
+            val bobY = sin(time / 140.0).toFloat() * (cellWidth * 0.05f)
+            val fy = food.position.y * cellWidth + cellWidth / 2f + shakeY + bobY
 
-            // Pulsing glow ring
-            val pulse = (sin(System.currentTimeMillis() / 150.0).toFloat() * 0.15f) + 1.0f
-            val foodRadius = (cellWidth * 0.42f) * pulse
+            val foodColor = Color(food.color)
+            val baseRadius = cellWidth * 0.44f
 
+            // Green/colored translucent circular backdrop ring behind emoji (like screenshot)
             drawCircle(
-                color = Color(food.color).copy(alpha = 0.35f),
-                radius = foodRadius * 1.35f,
+                color = Color(0xFF10B981).copy(alpha = 0.35f),
+                radius = baseRadius * 1.15f,
                 center = Offset(fx, fy)
             )
+            drawCircle(
+                color = Color(0xFF10B981).copy(alpha = 0.75f),
+                radius = baseRadius * 1.15f,
+                center = Offset(fx, fy),
+                style = Stroke(width = 2f)
+            )
 
-            // Draw Emoji Food with native canvas paint
-            val textPaint = Paint().apply {
-                textSize = cellWidth * 0.75f * pulse
+            // Draw Crisp Emoji with Native Canvas
+            val emojiPaint = Paint().apply {
+                textSize = cellWidth * 0.76f
                 textAlign = Paint.Align.CENTER
                 isAntiAlias = true
             }
-            val fontMetrics = textPaint.fontMetrics
-            val baseline = fy - (fontMetrics.ascent + fontMetrics.descent) / 2f
-            drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, textPaint)
+            val metrics = emojiPaint.fontMetrics
+            val baseline = fy - (metrics.ascent + metrics.descent) / 2f
+            drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, emojiPaint)
 
-            // Draw 10-second food expiration indicator ring
-            val elapsed = System.currentTimeMillis() - food.spawnTime
+            // Food Expiration Timer Ring (10 seconds)
+            val elapsed = time - food.spawnTime
             val timeLeftFraction = (1f - (elapsed / 10000f)).coerceIn(0f, 1f)
-            if (timeLeftFraction < 0.6f) {
+            if (timeLeftFraction < 0.65f) {
+                val ringRadius = baseRadius * 1.25f
                 drawArc(
-                    color = Color(food.color).copy(alpha = 0.8f),
+                    color = foodColor.copy(alpha = 0.9f),
                     startAngle = -90f,
                     sweepAngle = 360f * timeLeftFraction,
                     useCenter = false,
-                    topLeft = Offset(fx - foodRadius, fy - foodRadius),
-                    size = Size(foodRadius * 2f, foodRadius * 2f),
-                    style = Stroke(width = 3f)
+                    topLeft = Offset(fx - ringRadius, fy - ringRadius),
+                    size = Size(ringRadius * 2f, ringRadius * 2f),
+                    style = Stroke(width = 2.5f, cap = StrokeCap.Round)
                 )
             }
         }
 
-        // 4. Draw Snake Body & Head
+        // 4. Draw Snake (Clean Block-by-Block Movement with Arcade Polishing)
         if (snake.isNotEmpty()) {
             val primaryColor = Color(selectedSkin.primaryColor)
             val secondaryColor = Color(selectedSkin.secondaryColor)
-            val isImmortal = activeEffects.immortal > 0
+            val isImmortal = activeEffects.immortal > 0L
+            val currentAlpha = if (isImmortal) 0.75f else 1.0f
 
-            val currentAlpha = if (isImmortal) 0.65f else 1.0f
+            val segmentPositions = mutableListOf<Offset>()
+            val segmentRadii = mutableListOf<Float>()
 
-            // Draw segments from tail to head
-            for (i in snake.indices.reversed()) {
+            for (i in snake.indices) {
                 val currentPos = snake[i]
                 val prevPos = if (i < prevSnake.size) prevSnake[i] else currentPos
 
-                // Smooth position interpolation
-                val interpX = (prevPos.x + (currentPos.x - prevPos.x) * moveProgress) * cellWidth + cellWidth / 2f + shakeX
-                val interpY = (prevPos.y + (currentPos.y - prevPos.y) * moveProgress) * cellWidth + cellWidth / 2f + shakeY
+                // Check for grid wrapping (e.g. going from 0 to 19 or 19 to 0) to avoid screen streak glitch
+                val dx = currentPos.x - prevPos.x
+                val dy = currentPos.y - prevPos.y
+                val isWrapping = kotlin.math.abs(dx) > 1 || kotlin.math.abs(dy) > 1
 
-                val segRadius = (cellWidth * 0.44f) * (1f - (i.toFloat() / snake.size) * 0.25f)
+                val effectiveX = if (isWrapping) currentPos.x.toFloat() else (prevPos.x + dx * moveProgress)
+                val effectiveY = if (isWrapping) currentPos.y.toFloat() else (prevPos.y + dy * moveProgress)
 
-                if (i > 0) {
-                    // Body Segment
-                    val segColor = if (i % 2 == 0) primaryColor.copy(alpha = currentAlpha) else secondaryColor.copy(alpha = currentAlpha)
+                val posX = effectiveX * cellWidth + cellWidth / 2f + shakeX
+                val posY = effectiveY * cellWidth + cellWidth / 2f + shakeY
 
-                    drawCircle(
-                        color = segColor,
-                        radius = segRadius,
-                        center = Offset(interpX, interpY)
-                    )
-                    drawCircle(
-                        color = Color(0xFF0F172A).copy(alpha = currentAlpha),
-                        radius = segRadius,
-                        center = Offset(interpX, interpY),
-                        style = Stroke(width = 1.5f)
-                    )
+                val radius = (cellWidth * 0.44f)
+                segmentPositions.add(Offset(posX, posY))
+                segmentRadii.add(radius)
+            }
 
-                    // Pattern spots or stripes
-                    if (selectedSkin.pattern == Pattern.SPOTS && i % 2 == 1) {
-                        drawCircle(
-                            color = Color.White.copy(alpha = 0.7f * currentAlpha),
-                            radius = segRadius * 0.35f,
-                            center = Offset(interpX, interpY)
-                        )
-                    }
-                } else {
-                    // Snake Head
-                    val headDegrees = when (direction) {
-                        Direction.UP -> 180f
-                        Direction.DOWN -> 0f
-                        Direction.LEFT -> 90f
-                        Direction.RIGHT -> 270f
-                    }
+            // A. Drop shadows under segments
+            for (i in segmentPositions.indices.reversed()) {
+                val pos = segmentPositions[i]
+                val r = segmentRadii[i]
+                drawCircle(
+                    color = Color(0x30000000),
+                    radius = r * 1.05f,
+                    center = Offset(pos.x, pos.y + r * 0.15f)
+                )
+            }
 
-                    rotate(degrees = headDegrees, pivot = Offset(interpX, interpY)) {
-                        val headScale = (cellWidth / 48f)
-                        drawContext.canvas.save()
-                        drawContext.canvas.translate(interpX - 32f * headScale, interpY - 32f * headScale)
-                        drawSnakeHead(selectedSkin, 64f * headScale, 64f * headScale, headScale, mouthOpen)
-                        drawContext.canvas.restore()
-                    }
-                }
+            // B. Draw Body Segments (Tail to Neck)
+            for (i in (1 until segmentPositions.size).reversed()) {
+                val pos = segmentPositions[i]
+                val r = segmentRadii[i]
+
+                val segColor = if (i % 2 == 0) primaryColor else secondaryColor
+
+                // 3D Ball Radial Gradient
+                val segBrush = Brush.radialGradient(
+                    colors = listOf(
+                        segColor.copy(alpha = currentAlpha),
+                        segColor.copy(alpha = currentAlpha),
+                        secondaryColor.copy(alpha = currentAlpha)
+                    ),
+                    center = Offset(pos.x - r * 0.25f, pos.y - r * 0.25f),
+                    radius = r * 1.25f
+                )
+
+                drawCircle(
+                    brush = segBrush,
+                    radius = r,
+                    center = pos
+                )
+
+                // 3D Juicy Gloss Reflection
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.5f * currentAlpha),
+                    radius = r * 0.32f,
+                    center = Offset(pos.x - r * 0.3f, pos.y - r * 0.3f)
+                )
+
+                // Subtle outline
+                drawCircle(
+                    color = Color(0xFF991B1B).copy(alpha = 0.6f * currentAlpha),
+                    radius = r,
+                    center = pos,
+                    style = Stroke(width = 1.5f)
+                )
+            }
+
+            // C. Draw Animated Head
+            val headPos = segmentPositions[0]
+            val headRadius = cellWidth * 0.48f
+
+            val headAngle = when (direction) {
+                Direction.DOWN -> 0f
+                Direction.UP -> 180f
+                Direction.LEFT -> 90f
+                Direction.RIGHT -> 270f
+            }
+
+            rotate(degrees = headAngle, pivot = headPos) {
+                drawRenderedSnakeHead(
+                    skin = selectedSkin,
+                    centerX = headPos.x,
+                    centerY = headPos.y,
+                    headRadius = headRadius,
+                    mouthOpen = mouthOpen,
+                    tongueFlick = true
+                )
             }
         }
 
-        // 5. Draw Particles
+        // 5. Draw Sparkles & Burst Particles
         for (p in particles) {
             val alpha = (1f - (p.life / p.maxLife)).coerceIn(0f, 1f)
+            val pColor = Color(p.color).copy(alpha = alpha)
+
+            // Convert grid particle coordinates to actual pixel coordinates
+            val px = p.x * cellWidth + shakeX
+            val py = p.y * cellWidth + shakeY
+
             drawCircle(
-                color = Color(p.color).copy(alpha = alpha),
-                radius = p.size,
-                center = Offset(p.x + shakeX, p.y + shakeY)
+                color = pColor,
+                radius = p.size * (cellWidth / 20f),
+                center = Offset(px, py)
             )
         }
 
-        // 6. Draw Floating Texts
+        // 6. Draw Floating Score Texts (Directly on spot where food was eaten)
         for (ft in floatingTexts) {
             val alpha = (ft.life / 30f).coerceIn(0f, 1f)
+            val scale = (1.2f - (ft.life / 30f) * 0.2f).coerceIn(1f, 1.2f)
+
             val textPaint = Paint().apply {
                 color = Color(ft.color).copy(alpha = alpha).toArgb()
-                textSize = cellWidth * 0.55f
-                isFakeBoldText = true
+                textSize = cellWidth * 0.70f * scale
+                typeface = Typeface.DEFAULT_BOLD
                 textAlign = Paint.Align.CENTER
                 isAntiAlias = true
+                setShadowLayer(5f, 0f, 2f, android.graphics.Color.argb((alpha * 200).toInt(), 0, 0, 0))
             }
-            drawContext.canvas.nativeCanvas.drawText(ft.text, ft.x + shakeX, ft.y + shakeY, textPaint)
+
+            val textX = ft.x * cellWidth + shakeX
+            val textY = ft.y * cellWidth + shakeY
+
+            drawContext.canvas.nativeCanvas.drawText(
+                ft.text,
+                textX,
+                textY,
+                textPaint
+            )
         }
     }
 }

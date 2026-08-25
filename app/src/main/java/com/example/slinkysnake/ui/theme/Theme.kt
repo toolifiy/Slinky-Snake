@@ -19,47 +19,31 @@ import androidx.core.view.WindowCompat
 val EmeraldPrimary = Color(0xFF10B981)
 val EmeraldDark = Color(0xFF059669)
 val AmberAccent = Color(0xFFF59E0B)
-val LightBg = Color(0xFFF8FAFC)
-val DarkBg = Color(0xFF0B0F19)
+val LightBg = Color(0xFF0A1128)
+val DarkBg = Color(0xFF0A1128)
 
 private val DarkColorScheme = darkColorScheme(
     primary = EmeraldPrimary,
     secondary = AmberAccent,
     tertiary = Color(0xFF8B5CF6),
-    background = DarkBg,
-    surface = Color(0xFF1E293B),
-    onPrimary = Color.White,
+    background = Color(0xFF0A1128),
+    surface = Color(0xFF131D2E),
+    surfaceVariant = Color(0xFF1E293B),
+    onPrimary = Color(0xFF0F172A),
     onSecondary = Color.Black,
     onBackground = Color(0xFFF1F5F9),
     onSurface = Color(0xFFF8FAFC)
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = EmeraldDark,
-    secondary = AmberAccent,
-    tertiary = Color(0xFF7C3AED),
-    background = LightBg,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color(0xFF0F172A),
-    onSurface = Color(0xFF1E293B)
-)
+private val LightColorScheme = DarkColorScheme
 
 @Composable
 fun SlinkySnakeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = DarkColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
