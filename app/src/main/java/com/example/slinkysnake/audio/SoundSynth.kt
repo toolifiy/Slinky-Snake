@@ -138,13 +138,31 @@ object SoundSynth {
                 val endSample = if (noteIdx == notes.size - 1) numSamples else ((noteIdx + 1) * noteDurationMs * SAMPLE_RATE / 1000)
                 val freq = notes[noteIdx]
 
-                for (i in startSample until endSample.coerceAtMost(numSamples)) {
+                for (i in startSample until endSample) {
                     val t = (i - startSample).toDouble() / SAMPLE_RATE
                     val progress = (i - startSample).toDouble() / (endSample - startSample)
-                    val envelope = 1.0 - progress * 0.6
+                    val envelope = (1.0 - progress) * (1.0 - progress)
                     val sample = sin(2.0 * PI * freq * t) * envelope * Short.MAX_VALUE * 0.45 * soundVolume
                     buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
                 }
+            }
+            playPcm(buffer)
+        }
+    }
+
+    fun playCountdownBeep(isGo: Boolean) {
+        if (!isSoundEnabled || soundVolume <= 0f) return
+        audioScope.launch {
+            val durationMs = if (isGo) 180 else 90
+            val freq = if (isGo) 880.0 else 440.0
+            val numSamples = (SAMPLE_RATE * (durationMs / 1000.0)).toInt()
+            val buffer = ShortArray(numSamples)
+            for (i in 0 until numSamples) {
+                val t = i.toDouble() / SAMPLE_RATE
+                val progress = i.toDouble() / numSamples
+                val envelope = 1.0 - progress
+                val sample = sin(2.0 * PI * freq * t) * envelope * Short.MAX_VALUE * 0.45 * soundVolume
+                buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
             }
             playPcm(buffer)
         }

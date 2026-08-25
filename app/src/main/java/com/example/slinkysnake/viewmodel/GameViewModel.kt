@@ -231,8 +231,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (current) {
             resumeWithCountdown()
         } else {
-            _uiState.update { it.copy(isPaused = true) }
+            pauseGame()
         }
+    }
+
+    fun pauseGame() {
+        _uiState.update { it.copy(isPaused = true) }
     }
 
     fun exitGame() {
@@ -259,13 +263,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         resumeWithCountdown()
     }
 
-    private fun resumeWithCountdown() {
+    fun resumeWithCountdown() {
         viewModelScope.launch {
-            _uiState.update { it.copy(countdown = 3) }
+            _uiState.update { it.copy(isPaused = true) }
             for (i in 3 downTo 1) {
                 _uiState.update { it.copy(countdown = i) }
-                delay(800)
+                SoundSynth.playCountdownBeep(false)
+                delay(650)
             }
+            _uiState.update { it.copy(countdown = 0) } // 0 = "GO!"
+            SoundSynth.playCountdownBeep(true)
+            delay(300)
             _uiState.update { it.copy(countdown = null, isPaused = false) }
         }
     }
@@ -308,11 +316,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun calculateCurrentSpeed(state: GameUiState): Long {
-        var speed = if (state.gameMode == GameMode.CLASSIC) 220L else GameData.LEVEL_CONFIGS[state.currentLevelIdx].speed
+        var speed = if (state.gameMode == GameMode.CLASSIC) 280L else GameData.LEVEL_CONFIGS[state.currentLevelIdx].speed
 
         // Gradual speedup for every 5 foods eaten
         val foodSpeedAdj = (state.foodEatenCount / 5) * 3L
-        speed = (speed - foodSpeedAdj.coerceAtMost(30L)).coerceAtLeast(100L)
+        speed = (speed - foodSpeedAdj.coerceAtMost(40L)).coerceAtLeast(140L)
 
         // Active modifiers
         if (state.activeEffects.chili > 0L) {
@@ -326,7 +334,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             speed = (speed * (1f - boostPercent)).toLong()
         }
 
-        speed = (speed / state.speedMultiplier).toLong().coerceIn(30L, 1200L)
+        speed = (speed / state.speedMultiplier).toLong().coerceIn(60L, 1200L)
         return speed
     }
 

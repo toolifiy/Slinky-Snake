@@ -3,6 +3,7 @@ package com.example.slinkysnake.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,14 +44,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.slinkysnake.data.GameData
 import com.example.slinkysnake.model.GameMode
 import com.example.slinkysnake.ui.components.ArcadeDpadControls
@@ -67,6 +75,9 @@ fun GamePlayScreen(
     val currentTheme = GameData.BOARD_THEMES.find { it.id == uiState.boardThemeId } ?: GameData.BOARD_THEMES[0]
     val currentLevel = GameData.LEVEL_CONFIGS[uiState.currentLevelIdx]
 
+    var showExitDialog by remember { mutableStateOf(false) }
+    var showMenuDialog by remember { mutableStateOf(false) }
+
     // Outer Navy Background (#131C2E) with Golden Outer Frame (#F59E0B)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -77,7 +88,6 @@ fun GamePlayScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color(0xFF131C2E))
-                .border(6.dp, Color(0xFFF59E0B)) // Golden Outer Frame
                 .arcadeSwipeController(uiState.direction) { dir -> viewModel.onDirectionInput(dir) }
         ) {
             Column(
@@ -90,6 +100,7 @@ fun GamePlayScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clipToBounds()
                         .border(width = 3.dp, color = Color(0xFF0F172A))
                 ) {
                     // Checkered Game Board
@@ -144,6 +155,77 @@ fun GamePlayScreen(
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+
+                    // On-Board Pause Overlay (When paused without menu or exit dialog)
+                    if (uiState.isPaused && !showMenuDialog && !showExitDialog && uiState.countdown == null) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.65f))
+                                .clickable { viewModel.resumeWithCountdown() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color(0xFF1E293B),
+                                border = BorderStroke(2.5.dp, Color(0xFFF59E0B)),
+                                shadowElevation = 12.dp
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = "⏸️ PAUSED",
+                                        color = Color(0xFFF59E0B),
+                                        fontSize = 26.sp,
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 2.sp
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = Color(0xFF10B981),
+                                        modifier = Modifier.clickable { viewModel.resumeWithCountdown() }
+                                    ) {
+                                        Text(
+                                            text = "▶️ TAP TO RESUME",
+                                            color = Color.White,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Black,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // On-Board 3-Second Countdown Overlay
+                    if (uiState.countdown != null) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.65f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val countText = if (uiState.countdown == 0) "GO! 🚀" else "${uiState.countdown}"
+                            val countColor = if (uiState.countdown == 0) Color(0xFF10B981) else Color(0xFFF59E0B)
+                            Text(
+                                text = countText,
+                                fontSize = if (uiState.countdown == 0) 56.sp else 80.sp,
+                                fontWeight = FontWeight.Black,
+                                color = countColor,
+                                style = TextStyle(
+                                    shadow = Shadow(
+                                        color = Color.Black,
+                                        offset = Offset(4f, 4f),
+                                        blurRadius = 10f
+                                    )
+                                )
                             )
                         }
                     }
@@ -211,8 +293,8 @@ fun GamePlayScreen(
                             .background(Color(0xFFEF4444))
                             .border(2.dp, Color(0xFFDC2626), RoundedCornerShape(16.dp))
                             .clickable {
-                                viewModel.exitGame()
-                                onBackToHome()
+                                viewModel.pauseGame()
+                                showExitDialog = true
                             }
                             .padding(horizontal = 24.dp, vertical = 10.dp)
                             .testTag("game_exit_button"),
@@ -235,7 +317,8 @@ fun GamePlayScreen(
                             .background(Color(0xFFF59E0B))
                             .border(2.dp, Color(0xFFD97706), RoundedCornerShape(16.dp))
                             .clickable {
-                                viewModel.togglePause()
+                                viewModel.pauseGame()
+                                showMenuDialog = true
                             }
                             .padding(horizontal = 24.dp, vertical = 10.dp)
                             .testTag("game_menu_button"),
@@ -255,31 +338,20 @@ fun GamePlayScreen(
                 ArcadeDpadControls(
                     currentDirection = uiState.direction,
                     onDirectionChange = { dir -> viewModel.onDirectionInput(dir) },
-                    onPauseClick = { viewModel.togglePause() },
+                    onPauseClick = {
+                        if (uiState.isPaused) {
+                            viewModel.resumeWithCountdown()
+                        } else {
+                            viewModel.pauseGame()
+                        }
+                    },
                     isPaused = uiState.isPaused,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
 
-            // Countdown Overlay
-            if (uiState.countdown != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${uiState.countdown}",
-                        fontSize = 72.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // Pause / Menu Overlay (Exact match to screenshot)
-            if (uiState.isPaused && uiState.countdown == null) {
+            // In-Game Arcade Menu Popup Dialog (ONLY when ⚙️ MENU is clicked)
+            if (showMenuDialog) {
                 InGameMenuDialog(
                     currentThemeId = uiState.boardThemeId,
                     speedMultiplier = uiState.speedMultiplier,
@@ -293,8 +365,109 @@ fun GamePlayScreen(
                     onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
                     onFruitToggle = { fruitType -> viewModel.toggleFruit(fruitType) },
                     onSelectSkin = { skin -> viewModel.selectSkin(skin) },
-                    onDismiss = { viewModel.togglePause() }
+                    onDismiss = {
+                        showMenuDialog = false
+                        viewModel.resumeWithCountdown()
+                    }
                 )
+            }
+
+            // Exit Confirmation Popup Dialog (When 🚪 EXIT is clicked)
+            if (showExitDialog) {
+                Dialog(
+                    onDismissRequest = {
+                        showExitDialog = false
+                        viewModel.resumeWithCountdown()
+                    },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.75f))
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                            border = BorderStroke(2.dp, Color(0xFFEF4444)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 380.dp)
+                                .shadow(16.dp, RoundedCornerShape(24.dp))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Text(
+                                    text = "🚪 EXIT GAME?",
+                                    color = Color(0xFFEF4444),
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp
+                                )
+                                Text(
+                                    text = "Are you sure you want to exit to the main menu? Your current session progress will end.",
+                                    color = Color(0xFF94A3B8),
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 20.sp
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    // Exit Button
+                                    Button(
+                                        onClick = {
+                                            showExitDialog = false
+                                            viewModel.exitGame()
+                                            onBackToHome()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                                        shape = RoundedCornerShape(14.dp),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp)
+                                            .testTag("confirm_exit_button")
+                                    ) {
+                                        Text(
+                                            text = "🚪 EXIT APP",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+
+                                    // Resume Button
+                                    Button(
+                                        onClick = {
+                                            showExitDialog = false
+                                            viewModel.resumeWithCountdown()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                        shape = RoundedCornerShape(14.dp),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp)
+                                            .testTag("resume_game_button")
+                                    ) {
+                                        Text(
+                                            text = "▶️ RESUME",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // Game Over Overlay
