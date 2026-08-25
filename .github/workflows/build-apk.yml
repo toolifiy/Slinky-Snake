@@ -23,26 +23,25 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode Debug Keystore
         run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x gradlew
-          else
-            gradle wrapper --gradle-version 8.13
-            chmod +x gradlew
+          if [ -f "debug.keystore.base64" ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
           fi
 
-      - name: Build Debug & Release APK
-        run: ./gradlew assembleDebug assembleRelease --stacktrace
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
 
-      - name: Upload Debug APK Artifact
+      - name: Build Debug APK
+        run: gradle assembleDebug --stacktrace --no-daemon
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: SlinkySnake-Debug-APK
           path: app/build/outputs/apk/debug/*.apk
-
-      - name: Upload Release APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: SlinkySnake-Release-APK
-          path: app/build/outputs/apk/release/*.apk

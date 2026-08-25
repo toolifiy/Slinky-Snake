@@ -14,17 +14,24 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +59,8 @@ import com.example.slinkysnake.audio.SoundSynth
 data class ThemeGridItem(
     val id: String,
     val displayName: String,
-    val thumbColor: Color
+    val color1: Color,
+    val color2: Color
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,16 +80,16 @@ fun SettingsDialog(
     onDismiss: () -> Unit
 ) {
     val themeItems = listOf(
-        ThemeGridItem("mint", "Mint", Color(0xFF86EFAC)),
-        ThemeGridItem("crimson", "Crimson", Color(0xFFFDA4AF)),
-        ThemeGridItem("butter", "Sweet", Color(0xFFFDE047)),
-        ThemeGridItem("lavender", "Royal", Color(0xFFE9D5FF)),
-        ThemeGridItem("sky", "Sky", Color(0xFF93C5FD)),
-        ThemeGridItem("cyber", "Cyber", Color(0xFF38BDF8)),
-        ThemeGridItem("chocolate", "Choco", Color(0xFFFED7AA)),
-        ThemeGridItem("volcano", "Spicy", Color(0xFFFB7185)),
-        ThemeGridItem("neon_arcade", "Neon", Color(0xFFA855F7)),
-        ThemeGridItem("gold_empire", "Gold", Color(0xFFFBBF24))
+        ThemeGridItem("mint", "Mint", Color(0xFFC2F5D3), Color(0xFF86EFAC)),
+        ThemeGridItem("crimson", "Crimson", Color(0xFFFEE2E2), Color(0xFFFDA4AF)),
+        ThemeGridItem("butter", "Sweet", Color(0xFFFEF3C7), Color(0xFFFDE047)),
+        ThemeGridItem("lavender", "Royal", Color(0xFFFAF5FF), Color(0xFFE9D5FF)),
+        ThemeGridItem("sky", "Sky", Color(0xFFDBEAFE), Color(0xFF93C5FD)),
+        ThemeGridItem("cyber", "Cyber", Color(0xFF38BDF8), Color(0xFF1E1B4B)),
+        ThemeGridItem("chocolate", "Choco", Color(0xFFFFEDD5), Color(0xFFFED7AA)),
+        ThemeGridItem("volcano", "Spicy", Color(0xFFFB7185), Color(0xFF451A03)),
+        ThemeGridItem("neon_arcade", "Neon", Color(0xFFA855F7), Color(0xFF3B0764)),
+        ThemeGridItem("gold_empire", "Gold", Color(0xFFFBBF24), Color(0xFF1E1B4B))
     )
 
     Dialog(
@@ -95,12 +103,12 @@ fun SettingsDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0A1128).copy(alpha = 0.85f))
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .background(Color(0xFF0A1128).copy(alpha = 0.88f))
+                .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Top Action Bar with ✕ Close Button and 🔊 Volume Pill (Exact match to screenshot)
                 Row(
@@ -111,7 +119,7 @@ fun SettingsDialog(
                     // ✕ Close Button
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(42.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color(0xFF1E293B))
                             .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(12.dp))
@@ -167,15 +175,17 @@ fun SettingsDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .clip(RoundedCornerShape(26.dp))
+                        .clip(RoundedCornerShape(24.dp))
                         .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(26.dp)) // Neon Violet Border
-                        .padding(16.dp)
+                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(24.dp)) // Neon Violet Border
+                        .padding(14.dp)
                         .testTag("settings_dialog")
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         // Header: ⚙️ ARCADE CABINET SETTINGS
                         Row(
@@ -203,7 +213,7 @@ fun SettingsDialog(
                                 Text(
                                     text = "⚡ SNAKE SPEED:",
                                     color = Color.White,
-                                    fontSize = 13.5.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Black
                                 )
                                 Text(
@@ -260,7 +270,7 @@ fun SettingsDialog(
 
                         // Section 2: 🎨 BOARD BACKGROUND COMBOS:
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
                                 text = "🎨 BOARD BACKGROUND COMBOS:",
@@ -302,12 +312,10 @@ fun SettingsDialog(
                             }
                         }
 
-                        // Section 3: 🍎 ALLOWED FOOD SPAWNS:
+                        // Section 3: 🍎 ALLOWED FOOD SPAWNS: (Compact 2-column scrollable box matching screenshot)
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
                                 text = "🍎 ALLOWED FOOD SPAWNS:",
@@ -316,20 +324,21 @@ fun SettingsDialog(
                                 fontWeight = FontWeight.Black
                             )
 
-                            // Inner scrollable card
+                            // Inner fixed-height scrollable card (2-Column Grid)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(18.dp))
+                                    .height(170.dp)
+                                    .clip(RoundedCornerShape(16.dp))
                                     .background(Color(0xFF0F172A))
-                                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(18.dp))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(16.dp))
+                                    .padding(8.dp)
                             ) {
-                                LazyColumn(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    contentPadding = PaddingValues(vertical = 6.dp)
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
                                     items(GameData.ALL_FOOD_TEMPLATES) { food ->
                                         val isChecked = allowedFruits.contains(food.type)
@@ -337,43 +346,45 @@ fun SettingsDialog(
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .clip(RoundedCornerShape(10.dp))
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .clickable {
                                                     onFruitToggle(food.type)
                                                     SoundSynth.playClick()
                                                 }
-                                                .padding(vertical = 6.dp, horizontal = 4.dp),
+                                                .padding(vertical = 4.dp, horizontal = 4.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                modifier = Modifier.weight(1f)
                                             ) {
                                                 Text(
                                                     text = food.emoji,
-                                                    fontSize = 18.sp
+                                                    fontSize = 16.sp
                                                 )
                                                 Text(
                                                     text = food.name,
                                                     color = Color.White,
-                                                    fontSize = 13.sp,
-                                                    fontWeight = FontWeight.Bold
+                                                    fontSize = 11.5.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1
                                                 )
                                             }
 
                                             // Green Square Checkbox matching screenshot
                                             Box(
                                                 modifier = Modifier
-                                                    .size(22.dp)
-                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .size(20.dp)
+                                                    .clip(RoundedCornerShape(5.dp))
                                                     .background(
                                                         if (isChecked) Color(0xFF10B981) else Color(0xFF1E293B)
                                                     )
                                                     .border(
                                                         width = 1.5.dp,
                                                         color = if (isChecked) Color(0xFF059669) else Color(0xFF475569),
-                                                        shape = RoundedCornerShape(6.dp)
+                                                        shape = RoundedCornerShape(5.dp)
                                                     ),
                                                 contentAlignment = Alignment.Center
                                             ) {
@@ -382,13 +393,47 @@ fun SettingsDialog(
                                                         Icons.Default.Check,
                                                         contentDescription = "Checked",
                                                         tint = Color.White,
-                                                        modifier = Modifier.size(16.dp)
+                                                        modifier = Modifier.size(14.dp)
                                                     )
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
+
+                        // Section 4: RESET GAME PROGRESS
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFF1E293B))
+                                .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                                .clickable {
+                                    onResetProgress()
+                                    SoundSynth.playClick()
+                                }
+                                .padding(12.dp)
+                                .testTag("reset_progress_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = "Reset",
+                                    tint = Color(0xFFEF4444),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Reset All Progress & Scores",
+                                    color = Color(0xFFEF4444),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black
+                                )
                             }
                         }
                     }
@@ -408,7 +453,7 @@ private fun ThemePillCard(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1E293B))
+            .background(if (isSelected) Color(0xFF1E1B4B) else Color(0xFF1E293B))
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
                 color = if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
@@ -430,30 +475,36 @@ private fun ThemePillCard(
                 fontWeight = FontWeight.Bold
             )
 
-            // Switch Capsule Representation (Screenshot exact look)
-            Box(
+            // Exact Dual Color Swatch Capsule from screenshot (col1 + col2 dots)
+            Row(
                 modifier = Modifier
-                    .width(32.dp)
-                    .height(18.dp)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(
-                        if (isSelected) item.thumbColor.copy(alpha = 0.25f) else Color(0xFF0F172A)
-                    )
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFF0F172A))
                     .border(
                         1.dp,
-                        if (isSelected) item.thumbColor.copy(alpha = 0.5f) else Color(0xFF334155),
-                        RoundedCornerShape(9.dp)
+                        if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
+                        RoundedCornerShape(10.dp)
                     )
-                    .padding(2.dp),
-                contentAlignment = if (isSelected) Alignment.CenterEnd else Alignment.CenterStart
+                    .padding(horizontal = 4.dp, vertical = 3.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(13.dp)
+                        .size(11.dp)
                         .clip(CircleShape)
-                        .background(if (isSelected) item.thumbColor else Color(0xFF475569))
+                        .background(item.color1)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
+                )
+                Box(
+                    modifier = Modifier
+                        .size(11.dp)
+                        .clip(CircleShape)
+                        .background(item.color2)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
                 )
             }
         }
     }
 }
+

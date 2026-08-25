@@ -65,16 +65,16 @@ fun InGameMenuDialog(
     onDismiss: () -> Unit
 ) {
     val themeItems = listOf(
-        ThemeGridItem("mint", "Mint", Color(0xFF86EFAC)),
-        ThemeGridItem("crimson", "Crimson", Color(0xFFFDA4AF)),
-        ThemeGridItem("butter", "Sweet", Color(0xFFFDE047)),
-        ThemeGridItem("lavender", "Royal", Color(0xFFE9D5FF)),
-        ThemeGridItem("sky", "Sky", Color(0xFF93C5FD)),
-        ThemeGridItem("cyber", "Cyber", Color(0xFF38BDF8)),
-        ThemeGridItem("chocolate", "Choco", Color(0xFFFED7AA)),
-        ThemeGridItem("volcano", "Spicy", Color(0xFFFB7185)),
-        ThemeGridItem("neon_arcade", "Neon", Color(0xFFA855F7)),
-        ThemeGridItem("gold_empire", "Gold", Color(0xFFFBBF24))
+        ThemeGridItem("mint", "Mint", Color(0xFFC2F5D3), Color(0xFF86EFAC)),
+        ThemeGridItem("crimson", "Crimson", Color(0xFFFEE2E2), Color(0xFFFDA4AF)),
+        ThemeGridItem("butter", "Sweet", Color(0xFFFEF3C7), Color(0xFFFDE047)),
+        ThemeGridItem("lavender", "Royal", Color(0xFFFAF5FF), Color(0xFFE9D5FF)),
+        ThemeGridItem("sky", "Sky", Color(0xFFDBEAFE), Color(0xFF93C5FD)),
+        ThemeGridItem("cyber", "Cyber", Color(0xFF38BDF8), Color(0xFF1E1B4B)),
+        ThemeGridItem("chocolate", "Choco", Color(0xFFFFEDD5), Color(0xFFFED7AA)),
+        ThemeGridItem("volcano", "Spicy", Color(0xFFFB7185), Color(0xFF451A03)),
+        ThemeGridItem("neon_arcade", "Neon", Color(0xFFA855F7), Color(0xFF3B0764)),
+        ThemeGridItem("gold_empire", "Gold", Color(0xFFFBBF24), Color(0xFF1E1B4B))
     )
 
     Dialog(
@@ -503,7 +503,7 @@ private fun InGameThemePill(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFF1E293B))
+            .background(if (isSelected) Color(0xFF1E1B4B) else Color(0xFF1E293B))
             .border(
                 width = if (isSelected) 1.5.dp else 1.dp,
                 color = if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
@@ -525,28 +525,33 @@ private fun InGameThemePill(
                 maxLines = 1
             )
 
-            // Switch Capsule Representation
-            Box(
+            // Dual Color Swatch Capsule Preview
+            Row(
                 modifier = Modifier
-                    .width(28.dp)
-                    .height(16.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (isSelected) item.thumbColor.copy(alpha = 0.25f) else Color(0xFF0F172A)
-                    )
+                    .background(Color(0xFF0F172A))
                     .border(
                         1.dp,
-                        if (isSelected) item.thumbColor.copy(alpha = 0.5f) else Color(0xFF334155),
+                        if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
                         RoundedCornerShape(8.dp)
                     )
-                    .padding(2.dp),
-                contentAlignment = if (isSelected) Alignment.CenterEnd else Alignment.CenterStart
+                    .padding(horizontal = 3.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.5.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(11.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
-                        .background(if (isSelected) item.thumbColor else Color(0xFF475569))
+                        .background(item.color1)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
+                )
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(item.color2)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
                 )
             }
         }

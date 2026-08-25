@@ -73,32 +73,64 @@ fun DrawScope.drawRenderedSnakeHead(
         center = Offset(centerX, centerY + headRadius * 0.12f)
     )
 
-    // 1. Animated Forked Tongue
+    // 1. Animated Forked Tongue with realistic fluttering
     val time = System.currentTimeMillis()
-    val flickOffset = if (tongueFlick) (sin(time / 90.0).toFloat() * 3f * scale).coerceAtLeast(0f) else 2f * scale
-    val tongueBaseY = centerY + headRadius * 0.7f
-    val tongueTipY = tongueBaseY + (12f * scale) + flickOffset
+    // Real snake tongue flick cycle: fast darting out & in with flutter vibration
+    val cyclePeriod = 1100.0 // ms
+    val phase = (time % cyclePeriod) / cyclePeriod
+    val isFlicking = phase < 0.65 // flicking for 65% of the cycle
+
+    val tongueExtension = if (tongueFlick && isFlicking) {
+        val flickProgress = (phase / 0.65).toFloat()
+        // Smooth sine arch for extending out and in
+        (sin(flickProgress * Math.PI).toFloat() * 10f * scale).coerceAtLeast(0f)
+    } else if (mouthOpen) {
+        4f * scale
+    } else {
+        1.5f * scale
+    }
+
+    // High frequency flutter vibration when extended
+    val flutterX = if (tongueFlick && isFlicking) (sin(time / 28.0).toFloat() * 1.6f * scale) else 0f
+    val flutterTip = if (tongueFlick && isFlicking) (sin(time / 20.0).toFloat() * 1.8f * scale) else 0f
+
+    val tongueBaseY = centerY + headRadius * 0.72f
+    val tongueTipY = tongueBaseY + (9f * scale) + tongueExtension
+
+    val forkWidth = (5f * scale) + flutterTip
+    val forkLen = (5.5f * scale)
 
     val tonguePath = Path().apply {
         moveTo(centerX, tongueBaseY)
-        lineTo(centerX, tongueTipY)
-        // Forked tips
-        moveTo(centerX, tongueTipY)
-        lineTo(centerX - 4.5f * scale, tongueTipY + 5f * scale)
-        moveTo(centerX, tongueTipY)
-        lineTo(centerX + 4.5f * scale, tongueTipY + 5f * scale)
+        // Main tongue stem with slight wiggle
+        lineTo(centerX + flutterX, tongueTipY)
+        // Left fork prong
+        lineTo(centerX + flutterX - forkWidth, tongueTipY + forkLen)
+        moveTo(centerX + flutterX, tongueTipY)
+        // Right fork prong
+        lineTo(centerX + flutterX + forkWidth, tongueTipY + forkLen)
     }
-    // Tongue shadow
+    // Tongue drop shadow
     drawPath(
         path = tonguePath,
-        color = Color(0x40000000),
-        style = Stroke(width = 3.5f * scale, cap = StrokeCap.Round)
+        color = Color(0x55000000),
+        style = Stroke(width = 3.6f * scale, cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
-    // Tongue main red
+    // Tongue vibrant snake red
     drawPath(
         path = tonguePath,
-        color = Color(0xFFFF2A6D),
-        style = Stroke(width = 2.8f * scale, cap = StrokeCap.Round)
+        color = Color(0xFFF43F5E), // Vibrant Rose Red
+        style = Stroke(width = 2.8f * scale, cap = StrokeCap.Round, join = StrokeJoin.Round)
+    )
+    // Glossy center highlight on tongue
+    val highlightPath = Path().apply {
+        moveTo(centerX, tongueBaseY)
+        lineTo(centerX + flutterX * 0.5f, tongueTipY - 2f * scale)
+    }
+    drawPath(
+        path = highlightPath,
+        color = Color(0xFFFFB4C8),
+        style = Stroke(width = 1.2f * scale, cap = StrokeCap.Round)
     )
 
     // 2. Head Base with 3D Radial Gradient Shading
