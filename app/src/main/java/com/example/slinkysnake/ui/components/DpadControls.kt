@@ -66,24 +66,13 @@ fun ArcadeDpadControls(
                     style = stroke
                 )
             }
-            .padding(top = 10.dp, bottom = 14.dp),
+            .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Arcade Controller Header
-            Text(
-                text = "🕹️ ARCADE CONTROLLER 🕹️",
-                color = Color(0xFF94A3B8),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.5.sp
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
             // UP Button (Pink/Coral Red with white triangle)
             ArcadeDirButton(
                 backgroundColor = Color(0xFFFF4B72),
@@ -110,7 +99,7 @@ fun ArcadeDpadControls(
                 // CENTER PAUSE (Round Orange Button)
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(54.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(Color(0xFFF59E0B))
@@ -132,7 +121,7 @@ fun ArcadeDpadControls(
                         )
                         Text(
                             text = "🐍",
-                            fontSize = 14.sp
+                            fontSize = 13.sp
                         )
                     }
                 }
@@ -169,11 +158,11 @@ private fun ArcadeDirButton(
 ) {
     Box(
         modifier = Modifier
-            .size(width = 68.dp, height = 62.dp)
-            .shadow(6.dp, RoundedCornerShape(20.dp))
-            .clip(RoundedCornerShape(20.dp))
+            .size(width = 66.dp, height = 62.dp)
+            .shadow(6.dp, RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(backgroundColor)
-            .border(2.dp, shadowColor.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+            .border(2.dp, shadowColor.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
             .clickable { onClick() }
             .testTag(testTag),
         contentAlignment = Alignment.Center

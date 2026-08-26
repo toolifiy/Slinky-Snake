@@ -7,12 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,10 +19,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,32 +27,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.slinkysnake.data.GameData
 import com.example.slinkysnake.audio.SoundSynth
+import com.example.slinkysnake.data.GameData
 
 data class ThemeGridItem(
     val id: String,
@@ -106,23 +93,27 @@ fun SettingsDialog(
     ) {
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val effectiveBottomPadding = (navBarPadding + 20.dp).coerceAtLeast(36.dp)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF0A1128).copy(alpha = 0.88f))
                 .padding(
-                    start = 14.dp,
-                    end = 14.dp,
-                    top = statusBarPadding + 6.dp,
-                    bottom = navBarPadding + 8.dp
-                )
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarPadding + 12.dp,
+                    bottom = effectiveBottomPadding
+                ),
+            contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 640.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Top Action Bar with ✕ Close Button and 🔊 Volume Pill (Exact match to screenshot)
+                // Top Action Bar with ✕ Close Button and 🔊 Volume Pill
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -189,29 +180,24 @@ fun SettingsDialog(
                         .weight(1f)
                         .clip(RoundedCornerShape(24.dp))
                         .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(24.dp)) // Neon Violet Border
-                        .padding(14.dp)
+                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(24.dp))
                         .testTag("settings_dialog")
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         // Header: ⚙️ ARCADE CABINET SETTINGS
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "⚙️ ARCADE CABINET SETTINGS",
-                                color = Color(0xFF94A3B8),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
-                            )
-                        }
+                        Text(
+                            text = "⚙️ ARCADE CABINET SETTINGS",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
 
                         // Section 1: ⚡ SNAKE SPEED
                         Column(
@@ -324,7 +310,7 @@ fun SettingsDialog(
                             }
                         }
 
-                        // Section 3: 🍎 ALLOWED FOOD SPAWNS: (Compact 2-column scrollable box matching screenshot)
+                        // Section 3: 🍎 ALLOWED FOOD SPAWNS: (Flat non-nested 2-col list)
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -336,78 +322,83 @@ fun SettingsDialog(
                                 fontWeight = FontWeight.Black
                             )
 
-                            // Inner fixed-height scrollable card (2-Column Grid)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(170.dp)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(Color(0xFF0F172A))
                                     .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(16.dp))
-                                    .padding(8.dp)
+                                    .padding(10.dp)
                             ) {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Fixed(2),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    items(GameData.ALL_FOOD_TEMPLATES) { food ->
-                                        val isChecked = allowedFruits.contains(food.type)
-
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    val foodChunks = GameData.ALL_FOOD_TEMPLATES.chunked(2)
+                                    for (row in foodChunks) {
                                         Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .clickable {
-                                                    onFruitToggle(food.type)
-                                                    SoundSynth.playClick()
-                                                }
-                                                .padding(vertical = 4.dp, horizontal = 4.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                                modifier = Modifier.weight(1f)
-                                            ) {
-                                                Text(
-                                                    text = food.emoji,
-                                                    fontSize = 16.sp
-                                                )
-                                                Text(
-                                                    text = food.name,
-                                                    color = Color.White,
-                                                    fontSize = 11.5.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    maxLines = 1
-                                                )
-                                            }
+                                            for (food in row) {
+                                                val isChecked = allowedFruits.contains(food.type)
 
-                                            // Green Square Checkbox matching screenshot
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(20.dp)
-                                                    .clip(RoundedCornerShape(5.dp))
-                                                    .background(
-                                                        if (isChecked) Color(0xFF10B981) else Color(0xFF1E293B)
-                                                    )
-                                                    .border(
-                                                        width = 1.5.dp,
-                                                        color = if (isChecked) Color(0xFF059669) else Color(0xFF475569),
-                                                        shape = RoundedCornerShape(5.dp)
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                if (isChecked) {
-                                                    Icon(
-                                                        Icons.Default.Check,
-                                                        contentDescription = "Checked",
-                                                        tint = Color.White,
-                                                        modifier = Modifier.size(14.dp)
-                                                    )
+                                                Row(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                        .clickable {
+                                                            onFruitToggle(food.type)
+                                                            SoundSynth.playClick()
+                                                        }
+                                                        .padding(vertical = 4.dp, horizontal = 4.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                        modifier = Modifier.weight(1f)
+                                                    ) {
+                                                        Text(
+                                                            text = food.emoji,
+                                                            fontSize = 16.sp
+                                                        )
+                                                        Text(
+                                                            text = food.name,
+                                                            color = Color.White,
+                                                            fontSize = 11.5.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+
+                                                    // Green Square Checkbox
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .clip(RoundedCornerShape(5.dp))
+                                                            .background(
+                                                                if (isChecked) Color(0xFF10B981) else Color(0xFF1E293B)
+                                                            )
+                                                            .border(
+                                                                width = 1.5.dp,
+                                                                color = if (isChecked) Color(0xFF059669) else Color(0xFF475569),
+                                                                shape = RoundedCornerShape(5.dp)
+                                                            ),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        if (isChecked) {
+                                                            Icon(
+                                                                Icons.Default.Check,
+                                                                contentDescription = "Checked",
+                                                                tint = Color.White,
+                                                                modifier = Modifier.size(14.dp)
+                                                            )
+                                                        }
+                                                    }
                                                 }
+                                            }
+                                            if (row.size < 2) {
+                                                Spacer(modifier = Modifier.weight(1f))
                                             }
                                         }
                                     }
@@ -487,7 +478,7 @@ private fun ThemePillCard(
                 fontWeight = FontWeight.Bold
             )
 
-            // Exact Dual Color Swatch Capsule from screenshot (col1 + col2 dots)
+            // Dual Color Swatch Capsule Preview
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
@@ -519,4 +510,3 @@ private fun ThemePillCard(
         }
     }
 }
-

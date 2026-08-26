@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -55,15 +61,30 @@ fun AchievementsDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(
+        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val effectiveBottomPadding = (navBarPadding + 20.dp).coerceAtLeast(36.dp)
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth(0.94f)
-                .height(650.dp)
-                .testTag("achievements_dialog"),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
+                .fillMaxSize()
+                .padding(
+                    start = 14.dp,
+                    end = 14.dp,
+                    top = statusBarPadding + 10.dp,
+                    bottom = effectiveBottomPadding
+                ),
+            contentAlignment = Alignment.Center
         ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 640.dp)
+                    .testTag("achievements_dialog"),
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 8.dp
+            ) {
             Column(
                 modifier = Modifier
                     .padding(20.dp)
@@ -201,4 +222,5 @@ fun AchievementsDialog(
             }
         }
     }
+}
 }

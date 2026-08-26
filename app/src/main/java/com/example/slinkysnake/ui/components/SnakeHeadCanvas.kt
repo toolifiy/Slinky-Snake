@@ -73,26 +73,26 @@ fun DrawScope.drawRenderedSnakeHead(
         center = Offset(centerX, centerY + headRadius * 0.12f)
     )
 
-    // 1. Animated Forked Tongue with realistic fluttering
+    // 1. Animated Forked Tongue with realistic rapid fluttering (3-5 times per second)
     val time = System.currentTimeMillis()
-    // Real snake tongue flick cycle: fast darting out & in with flutter vibration
-    val cyclePeriod = 1100.0 // ms
+    // Real snake tongue flick cycle: 250ms per rapid flick (~4 times per second)
+    val cyclePeriod = 250.0 // ms -> 4 flicks per second (within 3 to 5 range)
     val phase = (time % cyclePeriod) / cyclePeriod
-    val isFlicking = phase < 0.65 // flicking for 65% of the cycle
+    val isFlicking = phase < 0.75 // flicking for 75% of each rapid cycle
 
     val tongueExtension = if (tongueFlick && isFlicking) {
-        val flickProgress = (phase / 0.65).toFloat()
-        // Smooth sine arch for extending out and in
-        (sin(flickProgress * Math.PI).toFloat() * 10f * scale).coerceAtLeast(0f)
+        val flickProgress = (phase / 0.75).toFloat()
+        // Fast energetic darting out and in
+        (sin(flickProgress * Math.PI).toFloat() * 11f * scale).coerceAtLeast(0f)
     } else if (mouthOpen) {
         4f * scale
     } else {
         1.5f * scale
     }
 
-    // High frequency flutter vibration when extended
-    val flutterX = if (tongueFlick && isFlicking) (sin(time / 28.0).toFloat() * 1.6f * scale) else 0f
-    val flutterTip = if (tongueFlick && isFlicking) (sin(time / 20.0).toFloat() * 1.8f * scale) else 0f
+    // High frequency realistic flutter vibration (side-to-side and fork tips)
+    val flutterX = if (tongueFlick && isFlicking) (sin(time / 14.0).toFloat() * 1.8f * scale) else 0f
+    val flutterTip = if (tongueFlick && isFlicking) (sin(time / 10.0).toFloat() * 2.0f * scale) else 0f
 
     val tongueBaseY = centerY + headRadius * 0.72f
     val tongueTipY = tongueBaseY + (9f * scale) + tongueExtension

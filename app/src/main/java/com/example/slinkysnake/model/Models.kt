@@ -104,7 +104,8 @@ data class Food(
     val color: Long,
     val emoji: String,
     val points: Int,
-    val spawnTime: Long = System.currentTimeMillis()
+    val spawnTime: Long = System.currentTimeMillis(),
+    val remainingLifeMs: Long = 15000L
 )
 
 data class ActiveEffects(

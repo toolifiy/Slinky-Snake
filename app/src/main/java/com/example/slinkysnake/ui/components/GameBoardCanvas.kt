@@ -54,6 +54,7 @@ fun GameBoardCanvas(
     screenShake: Float,
     direction: Direction,
     mouthOpen: Boolean,
+    isPaused: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Canvas(
@@ -67,14 +68,14 @@ fun GameBoardCanvas(
 
         clipRect(0f, 0f, size.width, size.height) {
             // Screen Shake calculation
-            val shakeX = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2.0f else 0f
-            val shakeY = if (screenShake > 0f) (Math.random().toFloat() - 0.5f) * screenShake * 2.0f else 0f
+            val shakeX = if (screenShake > 0f && !isPaused) (Math.random().toFloat() - 0.5f) * screenShake * 2.0f else 0f
+            val shakeY = if (screenShake > 0f && !isPaused) (Math.random().toFloat() - 0.5f) * screenShake * 2.0f else 0f
 
             val time = System.currentTimeMillis()
 
-            // 1. Draw Checkered Mint/Lime Board Tiles (Exactly like Google Snake / Toolifiy arcade)
-            val col1 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol1) else Color(0xFFD3F5DD)
-            val col2 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol2) else Color(0xFFB8ECCD)
+            // 1. Draw Checkered Mint/Lime Board Tiles (Respects selected board theme)
+            val col1 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol1) else Color(boardThemeColor1)
+            val col2 = if (gameMode == GameMode.LEVELS) Color(levelConfig.theme.bgCol2) else Color(boardThemeColor2)
 
             for (x in 0 until GRID_SIZE) {
                 for (y in 0 until GRID_SIZE) {
@@ -130,7 +131,7 @@ fun GameBoardCanvas(
             // 3. Draw Food (Croissant / Apple / Powerup inside green circular badge like screenshot)
             if (food != null) {
                 val fx = food.position.x * cellWidth + cellWidth / 2f + shakeX
-                val bobY = sin(time / 140.0).toFloat() * (cellWidth * 0.03f)
+                val bobY = if (isPaused) 0f else sin(time / 140.0).toFloat() * (cellWidth * 0.03f)
                 val fy = food.position.y * cellWidth + cellWidth / 2f + shakeY + bobY
 
                 val foodColor = Color(food.color)
@@ -159,9 +160,8 @@ fun GameBoardCanvas(
                 val baseline = fy - (metrics.ascent + metrics.descent) / 2f
                 drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, emojiPaint)
 
-                // Food Expiration Timer Ring (10 seconds)
-                val elapsed = time - food.spawnTime
-                val timeLeftFraction = (1f - (elapsed / 10000f)).coerceIn(0f, 1f)
+                // Food Expiration Timer Ring (Pausable dynamic 15 seconds)
+                val timeLeftFraction = (food.remainingLifeMs / 15000f).coerceIn(0f, 1f)
                 if (timeLeftFraction < 0.65f) {
                     val ringRadius = baseRadius * 1.25f
                     drawArc(
@@ -264,7 +264,7 @@ fun GameBoardCanvas(
                         centerY = headPos.y,
                         headRadius = headRadius,
                         mouthOpen = mouthOpen,
-                        tongueFlick = true
+                        tongueFlick = !isPaused
                     )
                 }
             }

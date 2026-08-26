@@ -133,10 +133,11 @@ fun GamePlayScreen(
                         screenShake = uiState.screenShake,
                         direction = uiState.direction,
                         mouthOpen = uiState.mouthOpen,
+                        isPaused = uiState.isPaused,
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Top-Left Floating Active Power-Up Banner (e.g. 🔥 Speed Boost (4.2s))
+                    // Top-Left Floating 3-Second Food Popup Banner & Active Boosts
                     val activeBoostText = when {
                         uiState.activeEffects.chili > 0L -> "🔥 Speed Boost (${String.format("%.1f", uiState.activeEffects.chili / 1000f)}s)"
                         uiState.activeEffects.booster > 0L -> "⚡ Hyper Surge (${String.format("%.1f", uiState.activeEffects.booster / 1000f)}s)"
@@ -147,7 +148,9 @@ fun GamePlayScreen(
                         else -> null
                     }
 
-                    if (activeBoostText != null) {
+                    val bannerText = uiState.bannerMessage ?: activeBoostText
+
+                    if (bannerText != null) {
                         Box(
                             modifier = Modifier
                                 .padding(8.dp)
@@ -156,17 +159,20 @@ fun GamePlayScreen(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     Brush.horizontalGradient(
-                                        listOf(Color(0xFFEA580C), Color(0xFFF59E0B))
+                                        if (uiState.bannerMessage != null)
+                                            listOf(Color(0xFFD97706), Color(0xFFFBBF24))
+                                        else
+                                            listOf(Color(0xFFEA580C), Color(0xFFF59E0B))
                                     )
                                 )
                                 .border(1.5.dp, Color(0xFFFEF08A), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                .padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
                             Text(
-                                text = activeBoostText,
-                                color = Color.White,
+                                text = bannerText,
+                                color = if (uiState.bannerMessage != null) Color(0xFF0F172A) else Color.White,
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.ExtraBold
+                                fontWeight = FontWeight.Black
                             )
                         }
                     }

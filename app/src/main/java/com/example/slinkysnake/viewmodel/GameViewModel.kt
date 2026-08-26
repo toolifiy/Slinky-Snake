@@ -16,6 +16,7 @@ import com.example.slinkysnake.model.LevelConfig
 import com.example.slinkysnake.model.Particle
 import com.example.slinkysnake.model.Position
 import com.example.slinkysnake.model.Skin
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,6 +50,8 @@ data class GameUiState(
     val moveProgress: Float = 1.0f,
     val direction: Direction = Direction.UP,
     val food: Food? = null,
+    val bannerMessage: String? = null,
+    val bannerExpiryTime: Long = 0L,
     val activeEffects: ActiveEffects = ActiveEffects(),
     val particles: List<Particle> = emptyList(),
     val floatingTexts: List<FloatingText> = emptyList(),
@@ -57,6 +60,8 @@ data class GameUiState(
     val selectedSkin: Skin = GameData.SNAKE_SKINS[0],
     val unlockedAchievements: Set<String> = emptySet(),
     val boardThemeId: String = "mint",
+    val boardThemeColor1: Long = 0xFFC2F5D3,
+    val boardThemeColor2: Long = 0xFFE6FCEE,
     val speedMultiplier: Float = 1.0f,
     val isSoundEnabled: Boolean = true,
     val soundVolume: Float = 0.8f,
@@ -74,6 +79,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             selectedSkin = GameData.SNAKE_SKINS.find { it.id == prefs.getSelectedSkinId() } ?: GameData.SNAKE_SKINS[0],
             unlockedAchievements = prefs.getUnlockedAchievements(),
             boardThemeId = prefs.getBoardTheme(),
+            boardThemeColor1 = (GameData.BOARD_THEMES.find { it.id == prefs.getBoardTheme() } ?: GameData.BOARD_THEMES[0]).color1,
+            boardThemeColor2 = (GameData.BOARD_THEMES.find { it.id == prefs.getBoardTheme() } ?: GameData.BOARD_THEMES[0]).color2,
             speedMultiplier = prefs.getSpeedMultiplier(),
             isSoundEnabled = prefs.isSoundEnabled(),
             soundVolume = prefs.getSoundVolume(),
@@ -130,7 +137,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setBoardTheme(themeId: String) {
         prefs.setBoardTheme(themeId)
-        _uiState.update { it.copy(boardThemeId = themeId) }
+        val selectedTheme = GameData.BOARD_THEMES.find { it.id == themeId } ?: GameData.BOARD_THEMES[0]
+        _uiState.update {
+            it.copy(
+                boardThemeId = themeId,
+                boardThemeColor1 = selectedTheme.color1,
+                boardThemeColor2 = selectedTheme.color2
+            )
+        }
     }
 
     fun setSoundEnabled(enabled: Boolean) {
@@ -280,37 +294,35 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun launchGameLoop() {
         gameLoopJob?.cancel()
-        gameLoopJob = viewModelScope.launch {
-            var lastTickTime = System.currentTimeMillis()
+        gameLoopJob = viewModelScope.launch(Dispatchers.Default) {
+            var lastStepTime = System.currentTimeMillis()
+            var lastFrameTime = System.currentTimeMillis()
 
             while (_uiState.value.isPlaying) {
                 val state = _uiState.value
 
                 if (state.isPaused || state.countdown != null) {
                     delay(50)
-                    lastTickTime = System.currentTimeMillis()
+                    lastStepTime = System.currentTimeMillis()
+                    lastFrameTime = System.currentTimeMillis()
                     continue
                 }
 
                 val now = System.currentTimeMillis()
-                val dt = now - lastTickTime
+                val deltaFrame = (now - lastFrameTime).coerceIn(1L, 100L)
+                lastFrameTime = now
 
-                // Calculate base speed
                 val baseSpeed = calculateCurrentSpeed(state)
 
-                if (dt >= baseSpeed) {
-                    lastTickTime = now
+                if (now - lastStepTime >= baseSpeed) {
+                    lastStepTime = now
                     stepGame()
                 }
 
-                // Update interpolation progress
-                val progress = (dt.toFloat() / baseSpeed.toFloat()).coerceIn(0f, 1f)
-                _uiState.update { it.copy(moveProgress = progress) }
+                // Smooth visual decays and particles
+                updateVisualDecays(deltaFrame)
 
-                // Decay timers & particles
-                updateVisualDecays(16L)
-
-                delay(16) // ~60 FPS
+                delay(20) // Solid ~50fps game loop without GC stutter
             }
         }
     }
@@ -425,65 +437,83 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             prefs.setHighScore(state.gameMode, nextScore)
         }
 
-        // Handle specific food effects
         var newEffects = state.activeEffects
         var boosterCount = state.boosterEatenCount
+        var newBannerMsg: String? = null
+        val nowTime = System.currentTimeMillis()
 
         when (food.type) {
             "BOOSTER" -> {
                 newEffects = newEffects.copy(booster = 10000L)
                 boosterCount += 1
+                newBannerMsg = "⚡ Hyper Surge: Speed + Multiplier!"
                 unlockAchievementDirect("blue_magic")
                 addFloatingText("BLUE MAGIC! 🧪", food.position.x, food.position.y, 0xFF3B82F6)
             }
             "GOLDEN_STAR" -> {
+                newBannerMsg = "⭐ Golden Star: Mega Points!"
                 unlockAchievementDirect("star_power")
                 addFloatingText("STAR BLAST! ⭐", food.position.x, food.position.y, 0xFFFACC15)
                 triggerScreenShake(6f)
             }
             "CHILI" -> {
                 newEffects = newEffects.copy(chili = 8000L, chiliCrying = 10000L)
+                newBannerMsg = "🔥 Speed Boost: 2x Points + High Speed!"
                 unlockAchievementDirect("spicy_run")
                 unlockAchievementDirect("chili_crying")
                 addFloatingText("SPICY FIRE! 🔥", food.position.x, food.position.y, 0xFFF97316)
             }
             "GRAPE" -> {
                 newEffects = newEffects.copy(grape = 6000L)
+                newBannerMsg = "🍇 Chill Slow: Easy Control!"
                 addFloatingText("CHILL MODE 🍇", food.position.x, food.position.y, 0xFF8B5CF6)
             }
             "CAKE" -> {
-                // Grow 2 extra segments
                 if (newSnake.isNotEmpty()) {
                     newSnake.add(newSnake.last())
                     newSnake.add(newSnake.last())
                 }
+                newBannerMsg = "🍰 Feast Cake: +2 Length & Points!"
                 addFloatingText("FEAST CAKE! 🍰", food.position.x, food.position.y, 0xFFFF007F)
             }
             "POWER_SPEED" -> {
                 newEffects = newEffects.copy(chili = 8000L)
+                newBannerMsg = "⚡ Hyper Speed Boost Activated!"
                 unlockAchievementDirect("perfect_reflexes")
                 addFloatingText("HYPER SPEED! ⚡", food.position.x, food.position.y, 0xFF38BDF8)
             }
             "POWER_IMMORTAL" -> {
                 newEffects = newEffects.copy(immortal = 10000L)
+                newBannerMsg = "👻 Ghost Shield: Wall & Self Pass-Through!"
                 unlockAchievementDirect("immortal_ghost")
                 addFloatingText("GHOST IMMORTAL! 👻", food.position.x, food.position.y, 0xFFA78BFA)
             }
             "POWER_DOUBLE" -> {
                 newEffects = newEffects.copy(doublePoints = 15000L)
+                newBannerMsg = "💎 2X Points Multiplier Activated!"
                 unlockAchievementDirect("double_deal")
                 addFloatingText("DOUBLE DEAL! 💎", food.position.x, food.position.y, 0xFFF472B6)
             }
             "POWER_MAGNET" -> {
                 newEffects = newEffects.copy(magnet = 12000L)
+                newBannerMsg = "🧲 Magnet Pull: Attract Food!"
                 unlockAchievementDirect("magnet_pull")
                 addFloatingText("MAGNET PULL! 🧲", food.position.x, food.position.y, 0xFFF87171)
             }
             "POWER_SHRINK" -> {
                 val targetLength = (newSnake.size * 0.65f).toInt().coerceAtLeast(3)
                 while (newSnake.size > targetLength) newSnake.removeAt(newSnake.size - 1)
+                newBannerMsg = "🍄 Shrink Shroom: Tail Size Reduced!"
                 unlockAchievementDirect("shrink_master")
                 addFloatingText("SHRINK SHROOM! 🍄", food.position.x, food.position.y, 0xFF34D399)
+            }
+            else -> {
+                // For other delicious foods, show a clean 3s notification if it has high points
+                if (food.points >= 25) {
+                    val foodTemplate = GameData.ALL_FOOD_TEMPLATES.find { it.type == food.type }
+                    val foodName = foodTemplate?.name ?: "Bonus Food"
+                    newBannerMsg = "${food.emoji} $foodName: +$earned PTS!"
+                }
             }
         }
 
@@ -537,6 +567,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 foodEatenCount = nextEaten,
                 boosterEatenCount = boosterCount,
                 food = nextFood,
+                bannerMessage = if (newBannerMsg != null) newBannerMsg else it.bannerMessage,
+                bannerExpiryTime = if (newBannerMsg != null) 2000L else it.bannerExpiryTime,
                 activeEffects = newEffects,
                 mouthOpen = true
             )
@@ -559,10 +591,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         var attempts = 0
         var found = false
 
+        // Safe bounds: (1 until GRID_SIZE - 1) ensures food never touches outer border or corner cells
         while (!found && attempts < 200) {
             newPos = Position(
-                (0 until GRID_SIZE).random(),
-                (0 until GRID_SIZE).random()
+                (1 until (GRID_SIZE - 1)).random(),
+                (1 until (GRID_SIZE - 1)).random()
             )
             val inSnake = currentSnake.any { it.x == newPos.x && it.y == newPos.y }
             val inObstacle = obstacles.any { it.x == newPos.x && it.y == newPos.y }
@@ -685,18 +718,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 if (ft.life > 0) ft else null
             }
 
-            // Food expiration (10s)
+            // Food expiration (15 seconds of active gameplay time)
             var currentFood = state.food
-            if (currentFood != null && System.currentTimeMillis() - currentFood.spawnTime >= 10000L) {
-                currentFood = spawnFood(state.snake, if (state.gameMode == GameMode.CLASSIC) emptyList() else GameData.LEVEL_CONFIGS[state.currentLevelIdx].obstacles)
+            if (currentFood != null) {
+                val nextFoodLife = currentFood.remainingLifeMs - dt
+                if (nextFoodLife <= 0L) {
+                    currentFood = spawnFood(
+                        state.snake,
+                        if (state.gameMode == GameMode.CLASSIC) emptyList() else GameData.LEVEL_CONFIGS[state.currentLevelIdx].obstacles
+                    )
+                } else {
+                    currentFood = currentFood.copy(remainingLifeMs = nextFoodLife)
+                }
             }
+
+            // Banner notification expiration (strictly 2 seconds of active gameplay time)
+            val nextBannerExpiry = (state.bannerExpiryTime - dt).coerceAtLeast(0L)
+            val currentBanner = if (nextBannerExpiry > 0L) state.bannerMessage else null
 
             state.copy(
                 activeEffects = nextEffects,
                 screenShake = nextShake,
                 particles = updatedParticles,
                 floatingTexts = updatedTexts,
-                food = currentFood
+                food = currentFood,
+                bannerMessage = currentBanner,
+                bannerExpiryTime = nextBannerExpiry
             )
         }
     }
