@@ -12,11 +12,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
@@ -81,8 +85,12 @@ fun GamePlayScreen(
     // Outer Navy Background (#131C2E) with Golden Outer Frame (#F59E0B)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFF131C2E)
+        containerColor = Color(0xFF131C2E),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
+        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,7 +100,11 @@ fun GamePlayScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(
+                        top = statusBarPadding,
+                        bottom = navBarPadding + 4.dp
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {

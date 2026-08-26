@@ -26,11 +26,21 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Decode Debug Keystore
+      - name: Ensure Debug Keystore Exists
         run: |
-          if [ -f "debug.keystore.base64" ]; then
+          mkdir -p ~/.android
+          if [ -f "debug.keystore" ]; then
+            echo "debug.keystore found in root."
+          elif [ -f "debug.keystore.base64" ]; then
+            echo "Decoding debug.keystore from base64..."
             base64 -d debug.keystore.base64 > debug.keystore
+          else
+            echo "Generating fresh debug.keystore with keytool..."
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           fi
+          # Also copy to app folder and user android folder for complete compatibility
+          cp debug.keystore app/debug.keystore
+          cp debug.keystore ~/.android/debug.keystore
 
       - name: Make Gradlew Executable
         run: chmod +x gradlew

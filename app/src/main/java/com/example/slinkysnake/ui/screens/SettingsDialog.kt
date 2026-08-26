@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -100,11 +104,19 @@ fun SettingsDialog(
             dismissOnClickOutside = true
         )
     ) {
+        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF0A1128).copy(alpha = 0.88f))
-                .padding(horizontal = 14.dp, vertical = 10.dp)
+                .padding(
+                    start = 14.dp,
+                    end = 14.dp,
+                    top = statusBarPadding + 6.dp,
+                    bottom = navBarPadding + 8.dp
+                )
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),

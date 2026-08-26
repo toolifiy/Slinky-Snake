@@ -13,11 +13,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -76,26 +80,36 @@ fun HomeScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFF0A1128) // Deep Dark Navy Canvas
+        containerColor = Color(0xFF0A1128), // Deep Dark Navy Canvas
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
+        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarPadding + 10.dp,
+                    bottom = navBarPadding + 16.dp
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // 1. TOP BAR (Hamburger Menu, Snake Avatar, Sound Volume Pill)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
             ) {
                 // Left Hamburger Button ☰
                 Box(
                     modifier = Modifier
+                        .align(Alignment.CenterStart)
                         .size(44.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF1E293B))
@@ -112,9 +126,10 @@ fun HomeScreen(
                     )
                 }
 
-                // Center Circular Snake Avatar Badge
+                // Perfectly Center Circular Snake Avatar Badge
                 Box(
                     modifier = Modifier
+                        .align(Alignment.Center)
                         .size(52.dp)
                         .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
@@ -124,13 +139,15 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = "🐍",
-                        fontSize = 28.sp
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
 
                 // Right Volume Pill Button 🔊 80% ▾
                 Box(
                     modifier = Modifier
+                        .align(Alignment.CenterEnd)
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color(0xFF1E293B))
                         .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(14.dp))
@@ -571,7 +588,7 @@ fun HomeScreen(
                         }
                     }
 
-                    // Big Action Button: 🚀 START SLITHER 🚀
+                    // Big Action Button: START
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -588,11 +605,11 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "🚀 START SLITHER 🚀",
+                            text = "START",
                             color = Color(0xFF0F172A),
-                            fontSize = 15.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                            letterSpacing = 1.2.sp
                         )
                     }
                 }
