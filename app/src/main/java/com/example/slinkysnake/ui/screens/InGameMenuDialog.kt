@@ -74,27 +74,28 @@ fun InGameMenuDialog(
     ) {
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val effectiveBottomPadding = (navBarPadding + 10.dp).coerceAtLeast(20.dp)
+        val effectiveTopPadding = (statusBarPadding + 14.dp).coerceAtLeast(24.dp)
+        val effectiveBottomPadding = (navBarPadding + 32.dp).coerceAtLeast(46.dp)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF0A1128).copy(alpha = 0.88f))
                 .padding(
-                    start = 12.dp,
-                    end = 12.dp,
-                    top = statusBarPadding + 6.dp,
+                    start = 14.dp,
+                    end = 14.dp,
+                    top = effectiveTopPadding,
                     bottom = effectiveBottomPadding
                 ),
             contentAlignment = Alignment.Center
         ) {
             val scrollState = rememberScrollState()
 
-            // Main Pause Menu Card with Golden/Amber Neon Border (Large ~50% taller, full height view)
+            // Main Pause Menu Card with Golden/Amber Neon Border (Elevated above nav bar)
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.94f)
+                    .fillMaxHeight(0.88f)
                     .testTag("in_game_menu_dialog"),
                 shape = RoundedCornerShape(26.dp),
                 color = Color(0xFF131D2E),

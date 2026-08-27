@@ -84,7 +84,9 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
     var showGuideDialog by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
 
-    if (uiState.isPlaying) {
+    val isGameActive = uiState.isPlaying || uiState.showGameOver || uiState.showLevelClear || uiState.showVictory
+
+    if (isGameActive) {
         GamePlayScreen(
             viewModel = viewModel,
             uiState = uiState,

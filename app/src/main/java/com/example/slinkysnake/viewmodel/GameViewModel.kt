@@ -310,7 +310,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun exitGame() {
         SoundSynth.playClick()
         gameLoopJob?.cancel()
-        _uiState.update { it.copy(isPlaying = false, isPaused = false, countdown = null) }
+        _uiState.update {
+            it.copy(
+                isPlaying = false,
+                isPaused = false,
+                countdown = null,
+                showGameOver = false,
+                showLevelClear = false,
+                showVictory = false
+            )
+        }
     }
 
     fun nextLevel() {

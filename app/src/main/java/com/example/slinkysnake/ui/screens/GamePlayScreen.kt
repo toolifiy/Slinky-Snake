@@ -608,6 +608,145 @@ fun GamePlayScreen(
                     }
                 }
             }
+
+            // Level Clear Overlay
+            if (uiState.showLevelClear) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.78f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                        border = BorderStroke(2.5.dp, Color(0xFF10B981)),
+                        modifier = Modifier.padding(20.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Text(
+                                text = "LEVEL COMPLETED! 🌟",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF10B981)
+                            )
+
+                            Text(
+                                text = "Awesome job! You reached the target score and earned +25 Bonus Coins! 🪙",
+                                color = Color(0xFFCBD5E1),
+                                textAlign = TextAlign.Center,
+                                fontSize = 13.sp
+                            )
+
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = Color(0xFF0F172A),
+                                border = BorderStroke(1.dp, Color(0xFF334155)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    horizontalArrangement = Arrangement.SpaceAround
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("SCORE", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                        Text("${uiState.score}", color = Color(0xFF10B981), fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                    }
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text("TOTAL COINS", color = Color(0xFF94A3B8), fontSize = 11.sp)
+                                        Text("🪙 ${uiState.coins}", color = Color(0xFFFBBF24), fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                    }
+                                }
+                            }
+
+                            Button(
+                                onClick = { viewModel.nextLevel() },
+                                modifier = Modifier.fillMaxWidth().height(50.dp).testTag("next_level_button"),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("NEXT LEVEL ➔", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.exitGame()
+                                    onBackToHome()
+                                },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("HOME MENU", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Victory Overlay
+            if (uiState.showVictory) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.85f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                        border = BorderStroke(2.5.dp, Color(0xFFF59E0B)),
+                        modifier = Modifier.padding(20.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Text(
+                                text = "🏆 GAME COMPLETED! 🏆",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFF59E0B),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text = "Congratulations! You have conquered all worlds in Slinky Snake Adventures! You are a legendary Snake Master! 👑🐍",
+                                color = Color(0xFFCBD5E1),
+                                textAlign = TextAlign.Center,
+                                fontSize = 13.sp
+                            )
+
+                            Button(
+                                onClick = {
+                                    viewModel.selectLevel(0)
+                                    viewModel.startGame()
+                                },
+                                modifier = Modifier.fillMaxWidth().height(50.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("PLAY AGAIN (WORLD 1)", color = Color(0xFF0F172A), fontWeight = FontWeight.Black)
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    viewModel.exitGame()
+                                    onBackToHome()
+                                },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text("HOME MENU", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -32,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MenuBook
@@ -82,10 +84,32 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFF0A1128), // Deep Dark Navy Canvas
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            BottomGameNavBar(
+                unlockedAchievementsCount = uiState.unlockedAchievements.size,
+                totalAchievementsCount = GameData.ACHIEVEMENTS.size,
+                unlockedSkinsCount = uiState.unlockedSkins.size,
+                totalSkinsCount = GameData.SNAKE_SKINS.size,
+                onHomeClick = {
+                    SoundSynth.playClick()
+                },
+                onMissionsClick = {
+                    SoundSynth.playClick()
+                    onOpenAchievements()
+                },
+                onSkinsClick = {
+                    SoundSynth.playClick()
+                    onOpenSkins()
+                },
+                onSettingsClick = {
+                    SoundSynth.playClick()
+                    onOpenSettings()
+                }
+            )
+        }
     ) { padding ->
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
         Column(
             modifier = Modifier
@@ -96,7 +120,7 @@ fun HomeScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = statusBarPadding + 10.dp,
-                    bottom = navBarPadding + 16.dp
+                    bottom = 16.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -606,7 +630,6 @@ fun HomeScreen(
                             .background(Color(0xFF10B981)) // Bright Emerald Green
                             .border(2.dp, Color(0xFF059669), RoundedCornerShape(18.dp))
                             .clickable {
-                                viewModel.startGame()
                                 onStartGame()
                             }
                             .testTag("play_game_button"),
@@ -702,93 +725,178 @@ fun HomeScreen(
                 }
             }
 
-            // 7. BOTTOM NAVIGATION FEATURE BUTTONS (Wardrobe, Badges, Foods)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            // 7. FOODS & POWER-UPS GUIDE BUTTON (Clean informative pill)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF131D2E))
+                    .border(1.5.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(18.dp))
+                    .clickable {
+                        SoundSynth.playClick()
+                        onOpenGuide()
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag("nav_guide_button"),
+                contentAlignment = Alignment.Center
             ) {
-                FeatureButton(
-                    icon = Icons.Default.Palette,
-                    label = "Skins",
-                    badge = "${GameData.SNAKE_SKINS.size}",
-                    borderColor = Color(0xFF10B981),
-                    onClick = onOpenSkins,
-                    modifier = Modifier.weight(1f),
-                    testTag = "nav_skins_button"
-                )
-
-                FeatureButton(
-                    icon = Icons.Default.EmojiEvents,
-                    label = "Badges",
-                    badge = "${uiState.unlockedAchievements.size}/${GameData.ACHIEVEMENTS.size}",
-                    borderColor = Color(0xFFF59E0B),
-                    onClick = onOpenAchievements,
-                    modifier = Modifier.weight(1f),
-                    testTag = "nav_achievements_button"
-                )
-
-                FeatureButton(
-                    icon = Icons.Default.MenuBook,
-                    label = "Foods",
-                    badge = "55+",
-                    borderColor = Color(0xFF8B5CF6),
-                    onClick = onOpenGuide,
-                    modifier = Modifier.weight(1f),
-                    testTag = "nav_guide_button"
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(text = "📖", fontSize = 18.sp)
+                    Text(
+                        text = "Foods & Power-ups Encyclopedia (55+ items)",
+                        color = Color(0xFFC4B5FD),
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "View ➔",
+                        color = Color(0xFFA78BFA),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun FeatureButton(
+private fun BottomGameNavBar(
+    unlockedAchievementsCount: Int,
+    totalAchievementsCount: Int,
+    unlockedSkinsCount: Int,
+    totalSkinsCount: Int,
+    onHomeClick: () -> Unit,
+    onMissionsClick: () -> Unit,
+    onSkinsClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    val navBarBottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFF0F172A), // Sleek deep dark slate
+        tonalElevation = 8.dp,
+        border = BorderStroke(1.dp, Color(0xFF1E293B).copy(alpha = 0.8f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = (navBarBottomInset + 6.dp).coerceAtLeast(10.dp))
+                .padding(top = 10.dp, start = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 1. 🏠 HOME (Active)
+            GameBottomNavItem(
+                icon = Icons.Default.Home,
+                label = "HOME",
+                isSelected = true,
+                badge = null,
+                activeColor = Color(0xFF10B981), // Emerald Green
+                onClick = onHomeClick,
+                modifier = Modifier.weight(1f),
+                testTag = "bottom_nav_home"
+            )
+
+            // 2. 🏆 MISSIONS
+            GameBottomNavItem(
+                icon = Icons.Default.EmojiEvents,
+                label = "MISSIONS",
+                isSelected = false,
+                badge = if (unlockedAchievementsCount > 0) "$unlockedAchievementsCount/$totalAchievementsCount" else null,
+                activeColor = Color(0xFF10B981),
+                onClick = onMissionsClick,
+                modifier = Modifier.weight(1f),
+                testTag = "bottom_nav_missions"
+            )
+
+            // 3. 🎨 SKINS
+            GameBottomNavItem(
+                icon = Icons.Default.Palette,
+                label = "SKINS",
+                isSelected = false,
+                badge = if (unlockedSkinsCount > 0) "$unlockedSkinsCount/$totalSkinsCount" else null,
+                activeColor = Color(0xFF10B981),
+                onClick = onSkinsClick,
+                modifier = Modifier.weight(1f),
+                testTag = "bottom_nav_skins"
+            )
+
+            // 4. ⚙️ SETTINGS
+            GameBottomNavItem(
+                icon = Icons.Default.Settings,
+                label = "SETTINGS",
+                isSelected = false,
+                badge = null,
+                activeColor = Color(0xFF10B981),
+                onClick = onSettingsClick,
+                modifier = Modifier.weight(1f),
+                testTag = "bottom_nav_settings"
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameBottomNavItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    badge: String,
-    borderColor: Color,
+    isSelected: Boolean,
+    badge: String?,
+    activeColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     testTag: String
 ) {
-    Box(
+    val contentColor = if (isSelected) activeColor else Color(0xFF64748B)
+
+    Column(
         modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF131D2E))
-            .border(1.5.dp, borderColor.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 8.dp)
+            .padding(vertical = 4.dp)
             .testTag(testTag),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+        Box(contentAlignment = Alignment.TopCenter) {
             Icon(
-                icon,
-                contentDescription = null,
-                tint = borderColor,
-                modifier = Modifier.size(22.dp)
+                imageVector = icon,
+                contentDescription = label,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
             )
-            Text(
-                text = label,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = borderColor.copy(alpha = 0.15f)
-            ) {
-                Text(
-                    text = badge,
-                    fontSize = 10.sp,
-                    color = borderColor,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
+
+            if (badge != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 10.dp, y = (-4).dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFFF59E0B))
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = badge,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF0F172A)
+                    )
+                }
             }
         }
+
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+            color = contentColor,
+            letterSpacing = 0.5.sp
+        )
     }
 }
