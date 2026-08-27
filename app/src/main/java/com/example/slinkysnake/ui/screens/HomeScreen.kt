@@ -87,10 +87,6 @@ fun HomeScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BottomGameNavBar(
-                unlockedAchievementsCount = uiState.unlockedAchievements.size,
-                totalAchievementsCount = GameData.ACHIEVEMENTS.size,
-                unlockedSkinsCount = uiState.unlockedSkins.size,
-                totalSkinsCount = GameData.SNAKE_SKINS.size,
                 onHomeClick = {
                     SoundSynth.playClick()
                 },
@@ -119,11 +115,11 @@ fun HomeScreen(
                 .padding(
                     start = 16.dp,
                     end = 16.dp,
-                    top = statusBarPadding + 10.dp,
-                    bottom = 16.dp
+                    top = statusBarPadding + 6.dp,
+                    bottom = 32.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // 1. TOP BAR (Hamburger Menu, Snake Avatar, Sound Volume Pill)
             Box(
@@ -766,10 +762,6 @@ fun HomeScreen(
 
 @Composable
 private fun BottomGameNavBar(
-    unlockedAchievementsCount: Int,
-    totalAchievementsCount: Int,
-    unlockedSkinsCount: Int,
-    totalSkinsCount: Int,
     onHomeClick: () -> Unit,
     onMissionsClick: () -> Unit,
     onSkinsClick: () -> Unit,
@@ -779,16 +771,17 @@ private fun BottomGameNavBar(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFF0F172A), // Sleek deep dark slate
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        color = Color(0xFF0D1527), // Sleek deep dark navy slate
         tonalElevation = 8.dp,
-        border = BorderStroke(1.dp, Color(0xFF1E293B).copy(alpha = 0.8f))
+        border = BorderStroke(1.5.dp, Color(0xFF10B981).copy(alpha = 0.5f)) // Subtle emerald green top border
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = (navBarBottomInset + 6.dp).coerceAtLeast(10.dp))
-                .padding(top = 10.dp, start = 8.dp, end = 8.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .padding(bottom = (navBarBottomInset + 2.dp).coerceAtLeast(6.dp))
+                .padding(top = 8.dp, start = 12.dp, end = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 1. 🏠 HOME (Active)
@@ -796,8 +789,7 @@ private fun BottomGameNavBar(
                 icon = Icons.Default.Home,
                 label = "HOME",
                 isSelected = true,
-                badge = null,
-                activeColor = Color(0xFF10B981), // Emerald Green
+                activeColor = Color(0xFF10B981), // Bright Emerald Green
                 onClick = onHomeClick,
                 modifier = Modifier.weight(1f),
                 testTag = "bottom_nav_home"
@@ -808,7 +800,6 @@ private fun BottomGameNavBar(
                 icon = Icons.Default.EmojiEvents,
                 label = "MISSIONS",
                 isSelected = false,
-                badge = if (unlockedAchievementsCount > 0) "$unlockedAchievementsCount/$totalAchievementsCount" else null,
                 activeColor = Color(0xFF10B981),
                 onClick = onMissionsClick,
                 modifier = Modifier.weight(1f),
@@ -820,7 +811,6 @@ private fun BottomGameNavBar(
                 icon = Icons.Default.Palette,
                 label = "SKINS",
                 isSelected = false,
-                badge = if (unlockedSkinsCount > 0) "$unlockedSkinsCount/$totalSkinsCount" else null,
                 activeColor = Color(0xFF10B981),
                 onClick = onSkinsClick,
                 modifier = Modifier.weight(1f),
@@ -832,7 +822,6 @@ private fun BottomGameNavBar(
                 icon = Icons.Default.Settings,
                 label = "SETTINGS",
                 isSelected = false,
-                badge = null,
                 activeColor = Color(0xFF10B981),
                 onClick = onSettingsClick,
                 modifier = Modifier.weight(1f),
@@ -847,56 +836,47 @@ private fun GameBottomNavItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     isSelected: Boolean,
-    badge: String?,
     activeColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     testTag: String
 ) {
-    val contentColor = if (isSelected) activeColor else Color(0xFF64748B)
+    val contentColor = if (isSelected) Color(0xFF10B981) else Color(0xFF64748B)
 
-    Column(
+    Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+                if (isSelected) Color(0xFF10B981).copy(alpha = 0.22f) else Color.Transparent
+            )
+            .border(
+                width = if (isSelected) 1.5.dp else 0.dp,
+                color = if (isSelected) Color(0xFF10B981).copy(alpha = 0.8f) else Color.Transparent,
+                shape = RoundedCornerShape(14.dp)
+            )
             .clickable { onClick() }
-            .padding(vertical = 4.dp)
+            .padding(vertical = 6.dp, horizontal = 4.dp)
             .testTag(testTag),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        contentAlignment = Alignment.Center
     ) {
-        Box(contentAlignment = Alignment.TopCenter) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = contentColor,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
 
-            if (badge != null) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = 10.dp, y = (-4).dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFFF59E0B))
-                        .padding(horizontal = 4.dp, vertical = 1.dp)
-                ) {
-                    Text(
-                        text = badge,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF0F172A)
-                    )
-                }
-            }
+            Text(
+                text = label,
+                fontSize = 9.5.sp,
+                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                color = contentColor,
+                letterSpacing = 0.5.sp
+            )
         }
-
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
-            color = contentColor,
-            letterSpacing = 0.5.sp
-        )
     }
 }
