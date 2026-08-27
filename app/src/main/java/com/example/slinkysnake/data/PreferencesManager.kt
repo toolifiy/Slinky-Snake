@@ -37,6 +37,40 @@ class PreferencesManager(context: Context) {
         prefs.edit().putString("snake_selected_skin_id", skinId).apply()
     }
 
+    fun getCoins(): Int {
+        return prefs.getInt("snake_coins_balance", 100) // 100 welcome gift coins
+    }
+
+    fun setCoins(coins: Int) {
+        prefs.edit().putInt("snake_coins_balance", coins.coerceAtLeast(0)).apply()
+    }
+
+    fun addCoins(amount: Int): Int {
+        val current = getCoins()
+        val updated = (current + amount).coerceAtLeast(0)
+        prefs.edit().putInt("snake_coins_balance", updated).apply()
+        return updated
+    }
+
+    fun getUnlockedSkinIds(): Set<String> {
+        return prefs.getStringSet("snake_unlocked_skins", setOf("slinky")) ?: setOf("slinky")
+    }
+
+    fun unlockSkin(skinId: String): Boolean {
+        val current = getUnlockedSkinIds().toMutableSet()
+        if (!current.contains(skinId)) {
+            current.add(skinId)
+            prefs.edit().putStringSet("snake_unlocked_skins", current).apply()
+            return true
+        }
+        return false
+    }
+
+    fun isSkinUnlocked(skinId: String): Boolean {
+        if (skinId == "slinky") return true
+        return getUnlockedSkinIds().contains(skinId)
+    }
+
     fun getPlayedSkinIds(): Set<String> {
         return prefs.getStringSet("snake_played_skins", setOf("slinky")) ?: setOf("slinky")
     }

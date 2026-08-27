@@ -1,5 +1,6 @@
 package com.example.slinkysnake.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -71,37 +74,41 @@ fun InGameMenuDialog(
     ) {
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val effectiveBottomPadding = (navBarPadding + 20.dp).coerceAtLeast(36.dp)
+        val effectiveBottomPadding = (navBarPadding + 10.dp).coerceAtLeast(20.dp)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF0A1128).copy(alpha = 0.88f))
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarPadding + 12.dp,
+                    start = 12.dp,
+                    end = 12.dp,
+                    top = statusBarPadding + 6.dp,
                     bottom = effectiveBottomPadding
                 ),
             contentAlignment = Alignment.Center
         ) {
-            // Main Pause Menu Card with Golden/Amber Neon Border
-            Box(
+            val scrollState = rememberScrollState()
+
+            // Main Pause Menu Card with Golden/Amber Neon Border (Large ~50% taller, full height view)
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 600.dp)
-                    .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFF131D2E))
-                    .border(2.5.dp, Color(0xFFF59E0B), RoundedCornerShape(26.dp))
-                    .testTag("in_game_menu_dialog")
+                    .fillMaxHeight(0.94f)
+                    .testTag("in_game_menu_dialog"),
+                shape = RoundedCornerShape(26.dp),
+                color = Color(0xFF131D2E),
+                border = BorderStroke(2.5.dp, Color(0xFFF59E0B)),
+                tonalElevation = 8.dp
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
                     // TOP BAR: ⏸️ GAME PAUSED + Subtitle + ✕ Close Button
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -457,7 +464,39 @@ fun InGameMenuDialog(
                         }
                     }
                 }
+
+                // Scroll Down Cue Indicator (visible when more items are below)
+                if (scrollState.canScrollForward) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 6.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF0F172A).copy(alpha = 0.92f),
+                        border = BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.6f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "📜 Scroll down for more",
+                                color = Color(0xFFFDE68A),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "↓",
+                                color = Color(0xFFF59E0B),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+}
 }

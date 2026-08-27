@@ -43,6 +43,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.example.slinkysnake.audio.SoundSynth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -144,34 +145,41 @@ fun HomeScreen(
                     )
                 }
 
-                // Right Volume Pill Button 🔊 80% ▾
+                // Right Golden Coins Balance Chip 🪙
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
+                        .shadow(4.dp, RoundedCornerShape(14.dp))
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color(0xFF1E293B))
-                        .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(14.dp))
+                        .border(1.5.dp, Color(0xFFF59E0B), RoundedCornerShape(14.dp))
                         .clickable {
-                            val newVol = if (uiState.soundVolume > 0f) 0f else 0.8f
-                            viewModel.setSoundVolume(newVol)
+                            SoundSynth.playCoin()
+                            onOpenSkins()
                         }
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        .testTag("home_volume_pill"),
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                        .testTag("home_coins_chip"),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = if (uiState.soundVolume > 0f) "🔊" else "🔇",
-                            fontSize = 13.sp
+                            text = "🪙",
+                            fontSize = 15.sp
                         )
                         Text(
-                            text = "${(uiState.soundVolume * 100).toInt()}% ▾",
-                            color = Color(0xFFE2E8F0),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "${uiState.coins}",
+                            color = Color(0xFFFBBF24), // Golden Amber
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Text(
+                            text = "+",
+                            color = Color(0xFF10B981),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black
                         )
                     }
                 }

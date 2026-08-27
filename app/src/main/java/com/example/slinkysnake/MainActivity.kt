@@ -106,7 +106,10 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
     if (showSkinsDialog) {
         SkinSelectorDialog(
             selectedSkin = uiState.selectedSkin,
+            coins = uiState.coins,
+            unlockedSkins = uiState.unlockedSkins,
             onSelectSkin = { skin -> viewModel.selectSkin(skin) },
+            onBuySkin = { skin -> viewModel.buySkin(skin) },
             onDismiss = { showSkinsDialog = false }
         )
     }

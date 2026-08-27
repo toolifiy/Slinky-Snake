@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +20,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -78,7 +83,7 @@ fun ArcadeDpadControls(
                 backgroundColor = Color(0xFFFF4B72),
                 shadowColor = Color(0xFFBE123C),
                 direction = Direction.UP,
-                onClick = { if (currentDirection != Direction.DOWN) onDirectionChange(Direction.UP) },
+                onClick = { onDirectionChange(Direction.UP) },
                 testTag = "dpad_up"
             )
 
@@ -92,7 +97,7 @@ fun ArcadeDpadControls(
                     backgroundColor = Color(0xFF10B981),
                     shadowColor = Color(0xFF047857),
                     direction = Direction.LEFT,
-                    onClick = { if (currentDirection != Direction.RIGHT) onDirectionChange(Direction.LEFT) },
+                    onClick = { onDirectionChange(Direction.LEFT) },
                     testTag = "dpad_left"
                 )
 
@@ -104,7 +109,13 @@ fun ArcadeDpadControls(
                         .clip(CircleShape)
                         .background(Color(0xFFF59E0B))
                         .border(2.5.dp, Color(0xFFD97706), CircleShape)
-                        .clickable { onPauseClick() }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    onPauseClick()
+                                }
+                            )
+                        }
                         .testTag("arcade_pause_btn"),
                     contentAlignment = Alignment.Center
                 ) {
@@ -131,7 +142,7 @@ fun ArcadeDpadControls(
                     backgroundColor = Color(0xFF0284C7),
                     shadowColor = Color(0xFF0369A1),
                     direction = Direction.RIGHT,
-                    onClick = { if (currentDirection != Direction.LEFT) onDirectionChange(Direction.RIGHT) },
+                    onClick = { onDirectionChange(Direction.RIGHT) },
                     testTag = "dpad_right"
                 )
             }
@@ -141,7 +152,7 @@ fun ArcadeDpadControls(
                 backgroundColor = Color(0xFFA855F7),
                 shadowColor = Color(0xFF7E22CE),
                 direction = Direction.DOWN,
-                onClick = { if (currentDirection != Direction.UP) onDirectionChange(Direction.DOWN) },
+                onClick = { onDirectionChange(Direction.DOWN) },
                 testTag = "dpad_down"
             )
         }
@@ -156,14 +167,26 @@ private fun ArcadeDirButton(
     onClick: () -> Unit,
     testTag: String
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .size(width = 66.dp, height = 62.dp)
-            .shadow(6.dp, RoundedCornerShape(18.dp))
+            .scale(if (isPressed) 0.93f else 1.0f)
+            .shadow(if (isPressed) 2.dp else 6.dp, RoundedCornerShape(18.dp))
             .clip(RoundedCornerShape(18.dp))
-            .background(backgroundColor)
-            .border(2.dp, shadowColor.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
-            .clickable { onClick() }
+            .background(if (isPressed) backgroundColor.copy(alpha = 0.85f) else backgroundColor)
+            .border(2.dp, shadowColor.copy(alpha = 0.8f), RoundedCornerShape(18.dp))
+            .pointerInput(direction) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        onClick() // Trigger instantly on touch down with 0 delay!
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            }
             .testTag(testTag),
         contentAlignment = Alignment.Center
     ) {
@@ -225,15 +248,15 @@ fun Modifier.arcadeSwipeController(
 
             if (abs(totalX) > threshold || abs(totalY) > threshold) {
                 if (abs(totalX) > abs(totalY)) {
-                    if (totalX > 0 && currentDirection != Direction.LEFT) {
+                    if (totalX > 0) {
                         onDirectionChange(Direction.RIGHT)
-                    } else if (totalX < 0 && currentDirection != Direction.RIGHT) {
+                    } else if (totalX < 0) {
                         onDirectionChange(Direction.LEFT)
                     }
                 } else {
-                    if (totalY > 0 && currentDirection != Direction.UP) {
+                    if (totalY > 0) {
                         onDirectionChange(Direction.DOWN)
-                    } else if (totalY < 0 && currentDirection != Direction.DOWN) {
+                    } else if (totalY < 0) {
                         onDirectionChange(Direction.UP)
                     }
                 }
@@ -243,3 +266,4 @@ fun Modifier.arcadeSwipeController(
         }
     )
 }
+

@@ -36,6 +36,51 @@ object SoundSynth {
         }
     }
 
+    fun playCoin() {
+        if (!isSoundEnabled || soundVolume <= 0f) return
+        audioScope.launch {
+            val durationMs = 120
+            val numSamples = (SAMPLE_RATE * (durationMs / 1000.0)).toInt()
+            val buffer = ShortArray(numSamples)
+            val half = numSamples / 2
+            for (i in 0 until numSamples) {
+                val t = i.toDouble() / SAMPLE_RATE
+                val freq = if (i < half) 987.77 else 1318.51 // B5 to E6 chime
+                val progress = i.toDouble() / numSamples
+                val envelope = (1.0 - progress) * (1.0 - progress)
+                val sample = sin(2.0 * PI * freq * t) * envelope * Short.MAX_VALUE * 0.45 * soundVolume
+                buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+            }
+            playPcm(buffer)
+        }
+    }
+
+    fun playPurchase() {
+        if (!isSoundEnabled || soundVolume <= 0f) return
+        audioScope.launch {
+            val notes = listOf(523.25, 659.25, 783.99, 1046.50) // C5 - E5 - G5 - C6 fanfare
+            val noteDurationMs = 70
+            val totalDurationMs = notes.size * noteDurationMs
+            val numSamples = (SAMPLE_RATE * (totalDurationMs / 1000.0)).toInt()
+            val buffer = ShortArray(numSamples)
+
+            for (noteIdx in notes.indices) {
+                val startSample = (noteIdx * noteDurationMs * SAMPLE_RATE / 1000)
+                val endSample = if (noteIdx == notes.size - 1) numSamples else ((noteIdx + 1) * noteDurationMs * SAMPLE_RATE / 1000)
+                val freq = notes[noteIdx]
+
+                for (i in startSample until endSample.coerceAtMost(numSamples)) {
+                    val t = (i - startSample).toDouble() / SAMPLE_RATE
+                    val progress = (i - startSample).toDouble() / (endSample - startSample)
+                    val envelope = 1.0 - progress * 0.4
+                    val sample = sin(2.0 * PI * freq * t) * envelope * Short.MAX_VALUE * 0.45 * soundVolume
+                    buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+                }
+            }
+            playPcm(buffer)
+        }
+    }
+
     fun playEat(type: String = "APPLE", combo: Int = 0) {
         if (!isSoundEnabled || soundVolume <= 0f) return
         audioScope.launch {

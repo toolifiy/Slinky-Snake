@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -93,111 +97,231 @@ fun SettingsDialog(
     ) {
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val effectiveBottomPadding = (navBarPadding + 20.dp).coerceAtLeast(36.dp)
+        val effectiveBottomPadding = (navBarPadding + 10.dp).coerceAtLeast(20.dp)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF0A1128).copy(alpha = 0.88f))
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarPadding + 12.dp,
+                    start = 12.dp,
+                    end = 12.dp,
+                    top = statusBarPadding + 6.dp,
                     bottom = effectiveBottomPadding
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Column(
+            val scrollState = rememberScrollState()
+
+            // Main Unified Glowing Arcade Settings Card (Modern Sleek Light Dark Slate)
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 640.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxHeight(0.94f)
+                    .testTag("settings_dialog"),
+                shape = RoundedCornerShape(26.dp),
+                color = Color(0xFF1E293B), // Modern Sleek Light-Dark Slate
+                border = BorderStroke(2.dp, Color(0xFF475569)),
+                tonalElevation = 8.dp
             ) {
-                // Top Action Bar with ✕ Close Button and 🔊 Volume Pill
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // ✕ Close Button
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF1E293B))
-                            .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(12.dp))
-                            .clickable {
-                                SoundSynth.playClick()
-                                onDismiss()
-                            }
-                            .testTag("close_settings_dialog"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Color(0xFFCBD5E1),
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    // 🔊 Volume Pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0xFF1E293B))
-                            .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(14.dp))
-                            .clickable {
-                                val nextVol = if (soundVolume > 0f) 0f else 0.8f
-                                onVolumeChange(nextVol)
-                                SoundSynth.playClick()
-                            }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        contentAlignment = Alignment.Center
+                    // Header with Title, Icon & ✕ Close Button INSIDE the curved box
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = if (soundVolume > 0f) "🔊" else "🔇",
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                text = "${(soundVolume * 100).toInt()}% ▾",
-                                color = Color(0xFFE2E8F0),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF334155))
+                                    .border(1.5.dp, Color(0xFF64748B), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "⚙️",
+                                    fontSize = 18.sp
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "GAME SETTINGS",
+                                    color = Color(0xFFF1F5F9),
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Text(
+                                    text = "Customize audio, themes & controls",
+                                    color = Color(0xFF94A3B8),
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        // ✕ Close Button
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF0F172A))
+                                .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(12.dp))
+                                .clickable {
+                                    SoundSynth.playClick()
+                                    onDismiss()
+                                }
+                                .testTag("close_settings_dialog"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = Color(0xFFCBD5E1),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
-                }
 
-                // Main Purple Glowing Arcade Cabinet Settings Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(24.dp))
-                        .testTag("settings_dialog")
-                ) {
-                    Column(
+                    // Scrollable Settings Content Area
+                    Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                            .fillMaxWidth()
+                            .weight(1f)
                     ) {
-                        // Header: ⚙️ ARCADE CABINET SETTINGS
-                        Text(
-                            text = "⚙️ ARCADE CABINET SETTINGS",
-                            color = Color(0xFF94A3B8),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                        // Section 0: 🔊 SOUND & AUDIO ADJUSTMENT
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF0F172A))
+                                .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(16.dp))
+                                .padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = if (isSoundEnabled && soundVolume > 0f) "🔊" else "🔇",
+                                        fontSize = 18.sp
+                                    )
+                                    Column {
+                                        Text(
+                                            text = "SOUND & SFX VOLUME",
+                                            color = Color.White,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                        Text(
+                                            text = if (isSoundEnabled && soundVolume > 0f) "Volume: ${(soundVolume * 100).toInt()}%" else "Sound Muted",
+                                            color = if (isSoundEnabled && soundVolume > 0f) Color(0xFF38BDF8) else Color(0xFF94A3B8),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                Switch(
+                                    checked = isSoundEnabled && soundVolume > 0f,
+                                    onCheckedChange = { isChecked ->
+                                        onSoundToggle(isChecked)
+                                        if (isChecked && soundVolume <= 0f) {
+                                            onVolumeChange(0.8f)
+                                        }
+                                        SoundSynth.playClick()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color(0xFF38BDF8),
+                                        checkedTrackColor = Color(0xFF0284C7),
+                                        uncheckedThumbColor = Color(0xFF64748B),
+                                        uncheckedTrackColor = Color(0xFF0F172A)
+                                    )
+                                )
+                            }
+
+                            // Volume Slider
+                            Slider(
+                                value = if (isSoundEnabled) soundVolume else 0f,
+                                onValueChange = { newVal ->
+                                    if (!isSoundEnabled && newVal > 0f) {
+                                        onSoundToggle(true)
+                                    }
+                                    onVolumeChange(newVal)
+                                },
+                                onValueChangeFinished = {
+                                    SoundSynth.playCoin()
+                                },
+                                valueRange = 0f..1f,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color(0xFF38BDF8),
+                                    activeTrackColor = Color(0xFF38BDF8),
+                                    inactiveTrackColor = Color(0xFF0F172A)
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("settings_volume_slider")
+                            )
+
+                            // Quick Volume Preset Buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                val presets = listOf(
+                                    Triple("MUTE 🔇", 0f, soundVolume == 0f || !isSoundEnabled),
+                                    Triple("30% 🔉", 0.3f, soundVolume in 0.25f..0.35f && isSoundEnabled),
+                                    Triple("70% 🔊", 0.7f, soundVolume in 0.65f..0.75f && isSoundEnabled),
+                                    Triple("100% 📢", 1.0f, soundVolume >= 0.95f && isSoundEnabled)
+                                )
+                                presets.forEach { (label, vol, isSelected) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSelected) Color(0xFF0284C7) else Color(0xFF0F172A))
+                                            .border(1.dp, if (isSelected) Color(0xFF38BDF8) else Color(0xFF334155), RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                if (vol > 0f && !isSoundEnabled) {
+                                                    onSoundToggle(true)
+                                                }
+                                                onVolumeChange(vol)
+                                                if (vol > 0f) SoundSynth.playClick()
+                                            }
+                                            .padding(vertical = 6.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            color = if (isSelected) Color.White else Color(0xFFCBD5E1),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
 
                         // Section 1: ⚡ SNAKE SPEED
                         Column(
@@ -371,17 +495,17 @@ fun SettingsDialog(
                                                         )
                                                     }
 
-                                                    // Green Square Checkbox
+                                                    // Modern Light-Dark Cyan Checkbox
                                                     Box(
                                                         modifier = Modifier
                                                             .size(20.dp)
                                                             .clip(RoundedCornerShape(5.dp))
                                                             .background(
-                                                                if (isChecked) Color(0xFF10B981) else Color(0xFF1E293B)
+                                                                if (isChecked) Color(0xFF0284C7) else Color(0xFF1E293B)
                                                             )
                                                             .border(
                                                                 width = 1.5.dp,
-                                                                color = if (isChecked) Color(0xFF059669) else Color(0xFF475569),
+                                                                color = if (isChecked) Color(0xFF38BDF8) else Color(0xFF475569),
                                                                 shape = RoundedCornerShape(5.dp)
                                                             ),
                                                         contentAlignment = Alignment.Center
@@ -411,39 +535,71 @@ fun SettingsDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFF1E293B))
+                                .background(Color(0xFF0F172A))
                                 .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
-                                .clickable {
-                                    onResetProgress()
-                                    SoundSynth.playClick()
-                                }
-                                .padding(12.dp)
-                                .testTag("reset_progress_button"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = "Reset",
-                                    tint = Color(0xFFEF4444),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Reset All Progress & Scores",
-                                    color = Color(0xFFEF4444),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Black
-                                )
+                            .clickable {
+                                onResetProgress()
+                                SoundSynth.playClick()
                             }
+                            .padding(12.dp)
+                            .testTag("reset_progress_button"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Reset",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Reset All Progress & Scores",
+                                color = Color(0xFFEF4444),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
+                            )
                         }
+                    }
+                }
+
+                // Scroll Down Cue Indicator (visible when more items are below)
+                if (scrollState.canScrollForward) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF0F172A).copy(alpha = 0.95f),
+                        border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.7f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "📜 Scroll down for more",
+                                color = Color(0xFFBAE6FD),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "↓",
+                                color = Color(0xFF38BDF8),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
                     }
                 }
             }
         }
     }
+}
 }
 
 @Composable

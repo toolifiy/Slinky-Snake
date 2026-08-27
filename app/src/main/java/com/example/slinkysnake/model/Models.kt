@@ -46,7 +46,8 @@ data class Skin(
     val eyeColor: Long,
     val accessory: Accessory,
     val pattern: Pattern,
-    val description: String
+    val description: String,
+    val price: Int = 0
 )
 
 enum class GameMode {

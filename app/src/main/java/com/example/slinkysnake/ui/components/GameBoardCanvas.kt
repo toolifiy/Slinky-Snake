@@ -186,11 +186,17 @@ fun GameBoardCanvas(
                 val segmentPositions = mutableListOf<Offset>()
                 val segmentRadii = mutableListOf<Float>()
 
+                val totalSegments = snake.size
                 for (i in snake.indices) {
                     val currentPos = snake[i]
                     val posX = currentPos.x * cellWidth + cellWidth / 2f + shakeX
                     val posY = currentPos.y * cellWidth + cellWidth / 2f + shakeY
-                    val radius = (cellWidth * 0.42f)
+                    val defaultRadius = (cellWidth * 0.42f)
+                    val radius = when {
+                        i == totalSegments - 1 && totalSegments >= 3 -> defaultRadius * 0.75f // Tip of tail (increased from 0.55f, slightly smaller than 2nd-last)
+                        i == totalSegments - 2 && totalSegments >= 4 -> defaultRadius * 0.88f // 2nd to last ball
+                        else -> defaultRadius
+                    }
                     segmentPositions.add(Offset(posX, posY))
                     segmentRadii.add(radius)
                 }

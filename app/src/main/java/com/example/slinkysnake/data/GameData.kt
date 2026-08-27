@@ -22,7 +22,8 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.NONE,
             pattern = Pattern.SOLID,
-            description = "The friendly, happy default snake. Loves red juicy apples!"
+            description = "The friendly, happy default snake. Loves red juicy apples!",
+            price = 0
         ),
         Skin(
             id = "glam",
@@ -32,7 +33,8 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.CROWN,
             pattern = Pattern.SPOTS,
-            description = "A fabulous pink snake with a shiny gold crown. Royalty!"
+            description = "A fabulous pink snake with a shiny gold crown. Royalty!",
+            price = 50
         ),
         Skin(
             id = "zippy",
@@ -42,7 +44,8 @@ object GameData {
             eyeColor = 0xFFFACC15,
             accessory = Accessory.SUNGLASSES,
             pattern = Pattern.STRIPES,
-            description = "Rocking cool black sunglasses. Cool, calm, and fast!"
+            description = "Rocking cool black sunglasses. Cool, calm, and fast!",
+            price = 50
         ),
         Skin(
             id = "ninja",
@@ -52,7 +55,8 @@ object GameData {
             eyeColor = 0xFFEF4444,
             accessory = Accessory.BANDANA,
             pattern = Pattern.SOLID,
-            description = "A master of stealth wearing a vibrant red ninja head bandana."
+            description = "A master of stealth wearing a vibrant red ninja head bandana.",
+            price = 80
         ),
         Skin(
             id = "mustache",
@@ -62,57 +66,8 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.MUSTACHE,
             pattern = Pattern.STRIPES,
-            description = "A distinguished gentleman snake with an elegant vintage mustache."
-        ),
-        Skin(
-            id = "cosmic",
-            name = "Cosmic Star 🌟",
-            primaryColor = 0xFFA855F7,
-            secondaryColor = 0xFF3B82F6,
-            eyeColor = 0xFFFFFFFF,
-            accessory = Accessory.NONE,
-            pattern = Pattern.GLOW,
-            description = "A cosmic glow snake that shifts colors between nebula purple and space blue."
-        ),
-        Skin(
-            id = "dragon",
-            name = "Golden Dragon 🐉",
-            primaryColor = 0xFFF59E0B,
-            secondaryColor = 0xFFEF4444,
-            eyeColor = 0xFFEF4444,
-            accessory = Accessory.CROWN,
-            pattern = Pattern.GLOW,
-            description = "A legendary dragon serpent coated in solid gold. Breath of stars!"
-        ),
-        Skin(
-            id = "poison",
-            name = "Neon Poison 🧪",
-            primaryColor = 0xFF10B981,
-            secondaryColor = 0xFF8B5CF6,
-            eyeColor = 0xFFFACC15,
-            accessory = Accessory.NONE,
-            pattern = Pattern.SPOTS,
-            description = "Bioluminescent green and venom purple. Exquisite but highly lethal!"
-        ),
-        Skin(
-            id = "retro",
-            name = "Retro Player 🎮",
-            primaryColor = 0xFF059669,
-            secondaryColor = 0xFF1E293B,
-            eyeColor = 0xFFFFFFFF,
-            accessory = Accessory.SUNGLASSES,
-            pattern = Pattern.STRIPES,
-            description = "Direct from the nostalgic green screen of the retro brick phone."
-        ),
-        Skin(
-            id = "ruby",
-            name = "Ruby Crimson 🧣",
-            primaryColor = 0xFFDC2626,
-            secondaryColor = 0xFFF43F5E,
-            eyeColor = 0xFFFFFFFF,
-            accessory = Accessory.BANDANA,
-            pattern = Pattern.GLOW,
-            description = "Wearing a warrior bandana and glistening with diamond-hard ruby scales."
+            description = "A distinguished gentleman snake with an elegant vintage mustache.",
+            price = 80
         ),
         Skin(
             id = "candy",
@@ -122,17 +77,8 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.MUSTACHE,
             pattern = Pattern.STRIPES,
-            description = "Dapper peppermint candy cane design with a distinguished mustache!"
-        ),
-        Skin(
-            id = "phantom",
-            name = "Midnight Ghost 🕶️",
-            primaryColor = 0xFF1E1B4B,
-            secondaryColor = 0xFF6366F1,
-            eyeColor = 0xFF60A5FA,
-            accessory = Accessory.SUNGLASSES,
-            pattern = Pattern.GLOW,
-            description = "A cool specter of the night who plays best when shifting dimensions."
+            description = "Dapper peppermint candy cane design with a distinguished mustache!",
+            price = 100
         ),
         Skin(
             id = "angry_viper",
@@ -142,7 +88,8 @@ object GameData {
             eyeColor = 0xFFFBBF24,
             accessory = Accessory.BANDANA,
             pattern = Pattern.STRIPES,
-            description = "Extremely short-tempered! Don't mess with him, he strikes with fury!"
+            description = "Extremely short-tempered! Don't mess with him, he strikes with fury!",
+            price = 100
         ),
         Skin(
             id = "goofy_charlie",
@@ -152,7 +99,30 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.MUSTACHE,
             pattern = Pattern.SPOTS,
-            description = "Always playing pranks and making silly faces. Sweet and funny!"
+            description = "Always playing pranks and making silly faces. Sweet and funny!",
+            price = 120
+        ),
+        Skin(
+            id = "poison",
+            name = "Neon Poison 🧪",
+            primaryColor = 0xFF10B981,
+            secondaryColor = 0xFF8B5CF6,
+            eyeColor = 0xFFFACC15,
+            accessory = Accessory.NONE,
+            pattern = Pattern.SPOTS,
+            description = "Bioluminescent green and venom purple. Exquisite but highly lethal!",
+            price = 150
+        ),
+        Skin(
+            id = "retro",
+            name = "Retro Player 🎮",
+            primaryColor = 0xFF059669,
+            secondaryColor = 0xFF1E293B,
+            eyeColor = 0xFFFFFFFF,
+            accessory = Accessory.SUNGLASSES,
+            pattern = Pattern.STRIPES,
+            description = "Direct from the nostalgic green screen of the retro brick phone.",
+            price = 150
         ),
         Skin(
             id = "toxic_shroom",
@@ -162,7 +132,41 @@ object GameData {
             eyeColor = 0xFFF43F5E,
             accessory = Accessory.SUNGLASSES,
             pattern = Pattern.SPOTS,
-            description = "Mixing weird potions inside the radioactive garden."
+            description = "Mixing weird potions inside the radioactive garden.",
+            price = 180
+        ),
+        Skin(
+            id = "cosmic",
+            name = "Cosmic Star 🌟",
+            primaryColor = 0xFFA855F7,
+            secondaryColor = 0xFF3B82F6,
+            eyeColor = 0xFFFFFFFF,
+            accessory = Accessory.NONE,
+            pattern = Pattern.GLOW,
+            description = "A cosmic glow snake that shifts colors between nebula purple and space blue.",
+            price = 200
+        ),
+        Skin(
+            id = "ruby",
+            name = "Ruby Crimson 🧣",
+            primaryColor = 0xFFDC2626,
+            secondaryColor = 0xFFF43F5E,
+            eyeColor = 0xFFFFFFFF,
+            accessory = Accessory.BANDANA,
+            pattern = Pattern.GLOW,
+            description = "Wearing a warrior bandana and glistening with diamond-hard ruby scales.",
+            price = 220
+        ),
+        Skin(
+            id = "phantom",
+            name = "Midnight Ghost 🕶️",
+            primaryColor = 0xFF1E1B4B,
+            secondaryColor = 0xFF6366F1,
+            eyeColor = 0xFF60A5FA,
+            accessory = Accessory.SUNGLASSES,
+            pattern = Pattern.GLOW,
+            description = "A cool specter of the night who plays best when shifting dimensions.",
+            price = 250
         ),
         Skin(
             id = "royal_sir",
@@ -172,7 +176,19 @@ object GameData {
             eyeColor = 0xFFFFFFFF,
             accessory = Accessory.CROWN,
             pattern = Pattern.STRIPES,
-            description = "Highly sophisticated blue bloodline with an outstanding sense of authority."
+            description = "Highly sophisticated blue bloodline with an outstanding sense of authority.",
+            price = 300
+        ),
+        Skin(
+            id = "dragon",
+            name = "Golden Dragon 🐉",
+            primaryColor = 0xFFF59E0B,
+            secondaryColor = 0xFFEF4444,
+            eyeColor = 0xFFEF4444,
+            accessory = Accessory.CROWN,
+            pattern = Pattern.GLOW,
+            description = "A legendary dragon serpent coated in solid gold. Breath of stars!",
+            price = 350
         ),
         Skin(
             id = "fire",
@@ -182,7 +198,8 @@ object GameData {
             eyeColor = 0xFFFBBF24,
             accessory = Accessory.BANDANA,
             pattern = Pattern.GLOW,
-            description = "Ghost Rider inspired blaze! Trails of glowing ashes, fireballs and lava scales!"
+            description = "Ghost Rider inspired blaze! Trails of glowing ashes, fireballs and lava scales!",
+            price = 400
         ),
         Skin(
             id = "ice",
@@ -192,7 +209,8 @@ object GameData {
             eyeColor = 0xFFE0F2FE,
             accessory = Accessory.CROWN,
             pattern = Pattern.GLOW,
-            description = "Frozen ice shell with frosty mist, diamond crystals and snow sparkles!"
+            description = "Frozen ice shell with frosty mist, diamond crystals and snow sparkles!",
+            price = 400
         )
     )
 

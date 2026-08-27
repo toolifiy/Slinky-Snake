@@ -58,6 +58,8 @@ data class GameUiState(
     val screenShake: Float = 0f,
     val mouthOpen: Boolean = false,
     val selectedSkin: Skin = GameData.SNAKE_SKINS[0],
+    val unlockedSkins: Set<String> = setOf("slinky"),
+    val coins: Int = 100,
     val unlockedAchievements: Set<String> = emptySet(),
     val boardThemeId: String = "mint",
     val boardThemeColor1: Long = 0xFFC2F5D3,
@@ -77,6 +79,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             unlockedLevel = prefs.getUnlockedLevel(),
             highScore = prefs.getHighScore(GameMode.CLASSIC),
             selectedSkin = GameData.SNAKE_SKINS.find { it.id == prefs.getSelectedSkinId() } ?: GameData.SNAKE_SKINS[0],
+            unlockedSkins = prefs.getUnlockedSkinIds(),
+            coins = prefs.getCoins(),
             unlockedAchievements = prefs.getUnlockedAchievements(),
             boardThemeId = prefs.getBoardTheme(),
             boardThemeColor1 = (GameData.BOARD_THEMES.find { it.id == prefs.getBoardTheme() } ?: GameData.BOARD_THEMES[0]).color1,
@@ -120,7 +124,38 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun buySkin(skin: Skin): Boolean {
+        if (prefs.isSkinUnlocked(skin.id)) {
+            selectSkin(skin)
+            return true
+        }
+        val currentCoins = _uiState.value.coins
+        if (currentCoins >= skin.price) {
+            val updatedCoins = prefs.addCoins(-skin.price)
+            prefs.unlockSkin(skin.id)
+            prefs.setSelectedSkinId(skin.id)
+            val played = prefs.addPlayedSkinId(skin.id)
+            if (played.size >= 3) unlockAchievementDirect("all_skins")
+            if (played.size >= 6) unlockAchievementDirect("skin_collector")
+
+            SoundSynth.playPurchase()
+            _uiState.update {
+                it.copy(
+                    coins = updatedCoins,
+                    unlockedSkins = prefs.getUnlockedSkinIds(),
+                    selectedSkin = skin
+                )
+            }
+            return true
+        }
+        return false
+    }
+
     fun selectSkin(skin: Skin) {
+        if (!prefs.isSkinUnlocked(skin.id)) {
+            buySkin(skin)
+            return
+        }
         prefs.setSelectedSkinId(skin.id)
         val played = prefs.addPlayedSkinId(skin.id)
         if (played.size >= 3) unlockAchievementDirect("all_skins")
@@ -128,6 +163,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         _uiState.update { it.copy(selectedSkin = skin) }
         SoundSynth.playClick()
+    }
+
+    fun addCoins(amount: Int) {
+        val updated = prefs.addCoins(amount)
+        _uiState.update { it.copy(coins = updated) }
     }
 
     fun setSpeedMultiplier(multiplier: Float) {
@@ -187,16 +227,30 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val directionQueue = ArrayDeque<Direction>()
 
     fun onDirectionInput(dir: Direction) {
-        if (directionQueue.size < 2) {
-            val lastPending = directionQueue.lastOrNull() ?: nextDirection
-            val isValid = when (dir) {
-                Direction.UP -> lastPending != Direction.DOWN && lastPending != Direction.UP
-                Direction.DOWN -> lastPending != Direction.UP && lastPending != Direction.DOWN
-                Direction.LEFT -> lastPending != Direction.RIGHT && lastPending != Direction.LEFT
-                Direction.RIGHT -> lastPending != Direction.LEFT && lastPending != Direction.RIGHT
-            }
-            if (isValid) {
+        val currentHeadDir = if (directionQueue.isEmpty()) _uiState.value.direction else directionQueue.last()
+        val isOpposite = when (dir) {
+            Direction.UP -> currentHeadDir == Direction.DOWN
+            Direction.DOWN -> currentHeadDir == Direction.UP
+            Direction.LEFT -> currentHeadDir == Direction.RIGHT
+            Direction.RIGHT -> currentHeadDir == Direction.LEFT
+        }
+        val isSame = dir == currentHeadDir
+        if (!isOpposite && !isSame) {
+            if (directionQueue.size < 2) {
                 directionQueue.addLast(dir)
+            } else {
+                // Replace the last queued direction with the user's latest fast input
+                directionQueue.removeLast()
+                val prev = directionQueue.lastOrNull() ?: _uiState.value.direction
+                val isOppositeToPrev = when (dir) {
+                    Direction.UP -> prev == Direction.DOWN
+                    Direction.DOWN -> prev == Direction.UP
+                    Direction.LEFT -> prev == Direction.RIGHT
+                    Direction.RIGHT -> prev == Direction.LEFT
+                }
+                if (!isOppositeToPrev && dir != prev) {
+                    directionQueue.addLast(dir)
+                }
             }
         }
     }
@@ -527,6 +581,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (nextEaten >= 30) unlockAchievementDirect("hungry_slitherer")
         if (nextCombo >= 8) unlockAchievementDirect("combo_king")
 
+        // Coins earned on food eat (+1 for normal food, +3 for special powerups/rare items)
+        val coinsEarned = if (food.points >= 25 || multiplier > 1) 2 else 1
+        val updatedCoins = prefs.addCoins(coinsEarned)
+
         // Level Complete check
         if (state.gameMode == GameMode.LEVELS) {
             val levelConfig = GameData.LEVEL_CONFIGS[state.currentLevelIdx]
@@ -534,11 +592,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 SoundSynth.playLevelUp()
                 val nextLevel = levelConfig.level + 1
                 prefs.setUnlockedLevel(nextLevel)
+                val levelBonusCoins = prefs.addCoins(25) // +25 bonus coins for level clear!
 
                 if (state.currentLevelIdx >= GameData.LEVEL_CONFIGS.size - 1) {
-                    _uiState.update { it.copy(showVictory = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel()) }
+                    _uiState.update { it.copy(showVictory = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel(), coins = levelBonusCoins) }
                 } else {
-                    _uiState.update { it.copy(showLevelClear = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel()) }
+                    _uiState.update { it.copy(showLevelClear = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel(), coins = levelBonusCoins) }
                 }
                 unlockAchievementDirect("level_clear")
                 if (levelConfig.level == 3) unlockAchievementDirect("level_3_master")
@@ -555,6 +614,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         createExplosion(food.position.x, food.position.y, food.color, 12)
         addFloatingText("+$earned${if (multiplier > 1) " (x$multiplier)" else ""}", food.position.x, food.position.y, food.color)
 
+        val bannerToDisplay = newBannerMsg ?: if (nextCombo > 1) "🔥 ${multiplier}x Combo ($nextCombo)" else null
+
         _uiState.update {
             it.copy(
                 prevSnake = state.snake,
@@ -562,13 +623,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 direction = nextDirection,
                 score = nextScore,
                 highScore = nextScore.coerceAtLeast(state.highScore),
+                coins = updatedCoins,
                 comboMultiplier = multiplier,
                 comboCount = nextCombo,
                 foodEatenCount = nextEaten,
                 boosterEatenCount = boosterCount,
                 food = nextFood,
-                bannerMessage = if (newBannerMsg != null) newBannerMsg else it.bannerMessage,
-                bannerExpiryTime = if (newBannerMsg != null) 2000L else it.bannerExpiryTime,
+                bannerMessage = bannerToDisplay ?: it.bannerMessage,
+                bannerExpiryTime = if (bannerToDisplay != null) 2000L else it.bannerExpiryTime,
                 activeEffects = newEffects,
                 mouthOpen = true
             )
@@ -578,10 +640,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private fun handleCrash() {
         SoundSynth.playCrash()
         triggerScreenShake(12f)
+        val state = _uiState.value
+        val gameBonusCoins = if (state.score > 0) (state.score / 10).coerceAtLeast(1) else 0
+        val currentCoins = if (gameBonusCoins > 0) prefs.addCoins(gameBonusCoins) else state.coins
         _uiState.update {
             it.copy(
                 isPlaying = false,
-                showGameOver = true
+                showGameOver = true,
+                coins = currentCoins
             )
         }
     }
