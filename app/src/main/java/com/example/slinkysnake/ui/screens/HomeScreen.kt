@@ -71,6 +71,7 @@ import com.example.slinkysnake.data.GameData
 import com.example.slinkysnake.model.GameMode
 import com.example.slinkysnake.ui.components.BottomGameNavBar
 import com.example.slinkysnake.ui.components.NavTab
+import com.example.slinkysnake.ui.components.SnakeArenaPreviewCanvas
 import com.example.slinkysnake.ui.components.SnakeHeadCanvas
 import com.example.slinkysnake.viewmodel.GameUiState
 import com.example.slinkysnake.viewmodel.GameViewModel
@@ -81,10 +82,9 @@ fun HomeScreen(
     uiState: GameUiState,
     onStartGame: () -> Unit,
     onOpenSkins: () -> Unit,
-    onOpenAchievements: () -> Unit,
+    onOpenMarket: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    var showFoodMarketDialog by remember { mutableStateOf(false) }
     val currentLevel = GameData.LEVEL_CONFIGS[uiState.currentLevelIdx.coerceIn(0, GameData.LEVEL_CONFIGS.size - 1)]
 
     Scaffold(
@@ -97,9 +97,9 @@ fun HomeScreen(
                 onHomeClick = {
                     SoundSynth.playClick()
                 },
-                onMissionsClick = {
+                onMarketClick = {
                     SoundSynth.playClick()
-                    onOpenAchievements()
+                    onOpenMarket()
                 },
                 onSkinsClick = {
                     SoundSynth.playClick()
@@ -145,7 +145,7 @@ fun HomeScreen(
                         .border(1.5.dp, Color(0xFF10B981).copy(alpha = 0.8f), RoundedCornerShape(8.dp))
                         .clickable {
                             SoundSynth.playClick()
-                            showFoodMarketDialog = true
+                            onOpenMarket()
                         }
                         .testTag("home_food_market_button"),
                     contentAlignment = Alignment.Center
@@ -553,16 +553,24 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Center Snake Avatar
+                    // Center Snake Avatar with Real Board Theme Background & Snake Body
                     Box(
                         modifier = Modifier
-                            .size(76.dp)
-                            .clickable { onOpenSkins() },
+                            .fillMaxWidth()
+                            .height(112.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(1.5.dp, Color(0xFF10B981).copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                            .clickable {
+                                SoundSynth.playClick()
+                                onOpenSkins()
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        SnakeHeadCanvas(
+                        SnakeArenaPreviewCanvas(
                             skin = uiState.selectedSkin,
-                            size = 72.dp
+                            bgCol1 = if (uiState.gameMode == GameMode.LEVELS) currentLevel.theme.bgCol1 else uiState.boardThemeColor1,
+                            bgCol2 = if (uiState.gameMode == GameMode.LEVELS) currentLevel.theme.bgCol2 else uiState.boardThemeColor2,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
 
@@ -732,15 +740,5 @@ fun HomeScreen(
                 }
             }
         }
-    }
-
-    if (showFoodMarketDialog) {
-        FoodMarketDialog(
-            uiState = uiState,
-            onSellFood = { viewModel.sellFood(it) },
-            onSellAllFoodStock = { viewModel.sellAllFoodStock(it) },
-            onRestockFood = { viewModel.restockFood(it) },
-            onDismiss = { showFoodMarketDialog = false }
-        )
     }
 }

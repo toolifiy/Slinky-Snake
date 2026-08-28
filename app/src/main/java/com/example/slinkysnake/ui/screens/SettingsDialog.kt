@@ -353,8 +353,8 @@ fun SettingsDialog(
                                 onValueChange = { newVal ->
                                     onSpeedChange(newVal)
                                 },
-                                valueRange = 0.6f..1.8f,
-                                steps = 5,
+                                valueRange = 0.5f..5.0f,
+                                steps = 8,
                                 colors = SliderDefaults.colors(
                                     thumbColor = Color(0xFF8B5CF6),
                                     activeTrackColor = Color(0xFF8B5CF6),

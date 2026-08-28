@@ -76,7 +76,7 @@ fun SettingsScreen(
     viewModel: GameViewModel,
     uiState: GameUiState,
     onBackToHome: () -> Unit,
-    onOpenMissions: () -> Unit,
+    onOpenMarket: () -> Unit,
     onOpenSkins: () -> Unit
 ) {
     var showResetConfirmDialog by remember { mutableStateOf(false) }
@@ -107,9 +107,9 @@ fun SettingsScreen(
                     SoundSynth.playClick()
                     onBackToHome()
                 },
-                onMissionsClick = {
+                onMarketClick = {
                     SoundSynth.playClick()
-                    onOpenMissions()
+                    onOpenMarket()
                 },
                 onSkinsClick = {
                     SoundSynth.playClick()
@@ -179,20 +179,7 @@ fun SettingsScreen(
                         }
                     }
 
-                    // Active Theme indicator pill
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFF1E293B),
-                        border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.5f))
-                    ) {
-                        Text(
-                            text = "⚙️ V2.5 PRO",
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            color = Color(0xFF38BDF8),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
+
                 }
             }
 
@@ -407,8 +394,8 @@ fun SettingsScreen(
                             onValueChange = { newVal ->
                                 viewModel.setSpeedMultiplier(newVal)
                             },
-                            valueRange = 0.6f..1.8f,
-                            steps = 5,
+                            valueRange = 0.5f..5.0f,
+                            steps = 8,
                             colors = SliderDefaults.colors(
                                 thumbColor = Color(0xFF8B5CF6),
                                 activeTrackColor = Color(0xFF8B5CF6),
@@ -424,7 +411,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "SLOW 🐌 (0.6x)",
+                                text = "SLOW 🐌 (0.5x)",
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF94A3B8)
@@ -436,10 +423,16 @@ fun SettingsScreen(
                                 color = Color(0xFF94A3B8)
                             )
                             Text(
-                                text = "HYPER 🚀 (1.8x)",
+                                text = "SUPER ⚡ (2.5x)",
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF94A3B8)
+                            )
+                            Text(
+                                text = "HYPER 🚀 (5.0x)",
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC084FC)
                             )
                         }
                     }

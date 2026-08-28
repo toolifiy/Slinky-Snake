@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,14 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 enum class NavTab {
-    HOME, MISSIONS, SKINS, SETTINGS
+    HOME, MARKET, SKINS, SETTINGS
 }
 
 @Composable
 fun BottomGameNavBar(
     selectedTab: NavTab = NavTab.HOME,
     onHomeClick: () -> Unit,
-    onMissionsClick: () -> Unit,
+    onMarketClick: () -> Unit,
     onSkinsClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
@@ -89,16 +89,16 @@ fun BottomGameNavBar(
                         testTag = "bottom_nav_home"
                     )
 
-                    // 2. 🏆 MISSIONS
+                    // 2. 🧺 MARKET
                     GameSegmentedNavItem(
-                        icon = Icons.Default.EmojiEvents,
-                        label = "MISSIONS",
-                        isSelected = selectedTab == NavTab.MISSIONS,
+                        icon = Icons.Default.Storefront,
+                        label = "MARKET",
+                        isSelected = selectedTab == NavTab.MARKET,
                         activeBgColor = Color(0xFFF59E0B), // Golden Amber
                         activeBorderColor = Color(0xFFD97706),
-                        onClick = onMissionsClick,
+                        onClick = onMarketClick,
                         modifier = Modifier.weight(1f),
-                        testTag = "bottom_nav_missions"
+                        testTag = "bottom_nav_market"
                     )
 
                     // 3. 🎨 SKINS

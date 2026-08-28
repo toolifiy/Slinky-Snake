@@ -81,36 +81,19 @@ import com.example.slinkysnake.ui.components.SnakeHeadCanvas
 import com.example.slinkysnake.viewmodel.GameUiState
 import com.example.slinkysnake.viewmodel.GameViewModel
 
-enum class SkinRarityFilter(val label: String, val minPrice: Int, val maxPrice: Int) {
-    ALL("🌟 ALL", 0, Int.MAX_VALUE),
-    COMMON("🟢 COMMON", 0, 80),
-    RARE("🔵 RARE", 81, 150),
-    EPIC("🟣 EPIC", 151, 250),
-    LEGENDARY("🔥 LEGENDARY", 251, Int.MAX_VALUE)
-}
-
 @Composable
 fun SkinsScreen(
     viewModel: GameViewModel,
     uiState: GameUiState,
     onBackToHome: () -> Unit,
-    onOpenMissions: () -> Unit,
+    onOpenMarket: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    var selectedFilter by remember { mutableStateOf(SkinRarityFilter.ALL) }
     var previewSkin by remember(uiState.selectedSkin) { mutableStateOf(uiState.selectedSkin) }
 
     val allSkins = GameData.SNAKE_SKINS
     val totalSkinsCount = allSkins.size
     val unlockedCount = uiState.unlockedSkins.size
-
-    val filteredSkins = remember(selectedFilter) {
-        if (selectedFilter == SkinRarityFilter.ALL) {
-            allSkins
-        } else {
-            allSkins.filter { it.price in selectedFilter.minPrice..selectedFilter.maxPrice }
-        }
-    }
 
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
@@ -125,9 +108,9 @@ fun SkinsScreen(
                     SoundSynth.playClick()
                     onBackToHome()
                 },
-                onMissionsClick = {
+                onMarketClick = {
                     SoundSynth.playClick()
-                    onOpenMissions()
+                    onOpenMarket()
                 },
                 onSkinsClick = {
                     SoundSynth.playClick()
@@ -151,76 +134,45 @@ fun SkinsScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // 1. TOP HEADER (Title + Total Coins pill)
+            // 1. TOP HEADER (Title - Coins pill removed)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF3B82F6), Color(0xFF1D4ED8))
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Palette,
-                                contentDescription = "Skins",
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                text = "VIP SKINS WARDROBE",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White,
-                                letterSpacing = 1.sp
-                            )
-                            Text(
-                                text = "Unlock & equip custom serpent avatars",
-                                fontSize = 11.5.sp,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
+                        Icon(
+                            Icons.Default.Palette,
+                            contentDescription = "Skins",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
 
-                    // Total Coins Pill
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF1E293B),
-                        border = BorderStroke(1.5.dp, Color(0xFFFBBF24).copy(alpha = 0.6f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.MonetizationOn,
-                                contentDescription = "Coins",
-                                tint = Color(0xFFFBBF24),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = "${uiState.coins}",
-                                color = Color(0xFFFDE68A),
-                                fontWeight = FontWeight.Black,
-                                fontSize = 13.5.sp
-                            )
-                        }
+                    Column {
+                        Text(
+                            text = "VIP SKINS WARDROBE",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "Unlock & equip custom serpent avatars",
+                            fontSize = 11.5.sp,
+                            color = Color(0xFF94A3B8)
+                        )
                     }
                 }
             }
@@ -323,32 +275,11 @@ fun SkinsScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
 
-                                // Badges Row (Pattern + Accessory + Rarity)
+                                // Badges Row (Pattern + Accessory)
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    val rarityText = when {
-                                        previewSkin.price >= 251 -> "🔥 LEGENDARY"
-                                        previewSkin.price >= 151 -> "🟣 EPIC"
-                                        previewSkin.price >= 81 -> "🔵 RARE"
-                                        else -> "🟢 COMMON"
-                                    }
-
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(Color(0xFF1E293B))
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Text(
-                                            text = rarityText,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(previewSkin.primaryColor)
-                                        )
-                                    }
-
                                     if (previewSkin.accessory != Accessory.NONE) {
                                         Box(
                                             modifier = Modifier
@@ -470,53 +401,8 @@ fun SkinsScreen(
                 }
             }
 
-            // 3. CATEGORY FILTER SEGMENTED ROW
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF131D2E))
-                        .border(2.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
-                        .padding(4.dp)
-                ) {
-                    LazyRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(SkinRarityFilter.values()) { filter ->
-                            val isSelected = selectedFilter == filter
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        if (isSelected) Color(0xFF38BDF8) else Color.Transparent
-                                    )
-                                    .border(
-                                        width = if (isSelected) 1.5.dp else 0.dp,
-                                        color = if (isSelected) Color(0xFF0284C7) else Color.Transparent,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable {
-                                        SoundSynth.playClick()
-                                        selectedFilter = filter
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 7.dp)
-                            ) {
-                                Text(
-                                    text = filter.label,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = if (isSelected) Color(0xFF0F172A) else Color(0xFF94A3B8)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 4. SKINS GRID ITEMS (Chunked into 2-column cards for best responsiveness)
-            val chunks = filteredSkins.chunked(2)
+            // 3. SKINS GRID ITEMS (2-column cards, all skins visible)
+            val chunks = allSkins.chunked(2)
             items(chunks) { rowSkins ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -599,39 +485,23 @@ private fun SkinCardItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Top Preview Avatar Box
+            // Top Preview Avatar Box - Large and 100% Unobstructed (No lock overlay)
             Box(
                 modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFF1E293B))
                     .border(
-                        1.dp,
-                        if (isUnlocked) Color(skin.primaryColor).copy(alpha = 0.6f) else Color(0xFF334155),
-                        RoundedCornerShape(8.dp)
+                        1.5.dp,
+                        if (isUnlocked) Color(skin.primaryColor).copy(alpha = 0.75f) else Color(0xFF334155),
+                        RoundedCornerShape(10.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 SnakeHeadCanvas(
                     skin = skin,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(66.dp)
                 )
-
-                if (!isUnlocked) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0xFF0F172A).copy(alpha = 0.55f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Lock,
-                            contentDescription = "Locked",
-                            tint = Color(0xFFFBBF24),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
             }
 
             // Skin Name

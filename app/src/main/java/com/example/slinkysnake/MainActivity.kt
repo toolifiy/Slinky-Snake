@@ -6,6 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +30,7 @@ import com.example.slinkysnake.model.Direction
 import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.screens.GamePlayScreen
 import com.example.slinkysnake.ui.screens.HomeScreen
-import com.example.slinkysnake.ui.screens.MissionsScreen
+import com.example.slinkysnake.ui.screens.MarketScreen
 import com.example.slinkysnake.ui.screens.SettingsScreen
 import com.example.slinkysnake.ui.screens.SkinsScreen
 import com.example.slinkysnake.ui.theme.SlinkySnakeTheme
@@ -91,26 +98,39 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
 
     val isGameActive = uiState.isPlaying || uiState.showGameOver || uiState.showLevelClear || uiState.showVictory
 
-    if (isGameActive) {
-        GamePlayScreen(
-            viewModel = viewModel,
-            uiState = uiState,
-            onBackToHome = { viewModel.exitGame() }
-        )
-    } else {
-        when (currentTab) {
-            NavTab.HOME -> {
+    AnimatedContent(
+        targetState = if (isGameActive) "GAMEPLAY" else currentTab.name,
+        transitionSpec = {
+            if (targetState == "GAMEPLAY" || initialState == "GAMEPLAY") {
+                (fadeIn(animationSpec = tween(280)) + slideInHorizontally(animationSpec = tween(280)) { it / 4 })
+                    .togetherWith(fadeOut(animationSpec = tween(220)) + slideOutHorizontally(animationSpec = tween(220)) { -it / 4 })
+            } else {
+                (fadeIn(animationSpec = tween(250)) + slideInHorizontally(animationSpec = tween(250)) { it / 6 })
+                    .togetherWith(fadeOut(animationSpec = tween(200)) + slideOutHorizontally(animationSpec = tween(200)) { -it / 6 })
+            }
+        },
+        label = "AppScreenTransition"
+    ) { screen ->
+        when (screen) {
+            "GAMEPLAY" -> {
+                GamePlayScreen(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    onBackToHome = { viewModel.exitGame() }
+                )
+            }
+            NavTab.HOME.name -> {
                 HomeScreen(
                     viewModel = viewModel,
                     uiState = uiState,
                     onStartGame = { viewModel.startGame() },
                     onOpenSkins = { currentTab = NavTab.SKINS },
-                    onOpenAchievements = { currentTab = NavTab.MISSIONS },
+                    onOpenMarket = { currentTab = NavTab.MARKET },
                     onOpenSettings = { currentTab = NavTab.SETTINGS }
                 )
             }
-            NavTab.MISSIONS -> {
-                MissionsScreen(
+            NavTab.MARKET.name -> {
+                MarketScreen(
                     viewModel = viewModel,
                     uiState = uiState,
                     onBackToHome = { currentTab = NavTab.HOME },
@@ -118,21 +138,21 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
                     onOpenSettings = { currentTab = NavTab.SETTINGS }
                 )
             }
-            NavTab.SKINS -> {
+            NavTab.SKINS.name -> {
                 SkinsScreen(
                     viewModel = viewModel,
                     uiState = uiState,
                     onBackToHome = { currentTab = NavTab.HOME },
-                    onOpenMissions = { currentTab = NavTab.MISSIONS },
+                    onOpenMarket = { currentTab = NavTab.MARKET },
                     onOpenSettings = { currentTab = NavTab.SETTINGS }
                 )
             }
-            NavTab.SETTINGS -> {
+            NavTab.SETTINGS.name -> {
                 SettingsScreen(
                     viewModel = viewModel,
                     uiState = uiState,
                     onBackToHome = { currentTab = NavTab.HOME },
-                    onOpenMissions = { currentTab = NavTab.MISSIONS },
+                    onOpenMarket = { currentTab = NavTab.MARKET },
                     onOpenSkins = { currentTab = NavTab.SKINS }
                 )
             }
