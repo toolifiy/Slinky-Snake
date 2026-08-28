@@ -101,7 +101,9 @@ data class FoodTemplate(
     val prob: Int,
     val category: FoodCategory,
     val effectDescription: String
-)
+) {
+    val sellPrice: Int get() = maxOf(5, points / 2)
+}
 
 data class Food(
     val position: Position,

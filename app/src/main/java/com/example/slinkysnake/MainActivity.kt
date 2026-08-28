@@ -24,7 +24,6 @@ import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.screens.GamePlayScreen
 import com.example.slinkysnake.ui.screens.HomeScreen
 import com.example.slinkysnake.ui.screens.MissionsScreen
-import com.example.slinkysnake.ui.screens.PowerUpGuideDialog
 import com.example.slinkysnake.ui.screens.SettingsScreen
 import com.example.slinkysnake.ui.screens.SkinsScreen
 import com.example.slinkysnake.ui.theme.SlinkySnakeTheme
@@ -88,7 +87,6 @@ class MainActivity : ComponentActivity() {
 fun SlinkySnakeApp(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var showGuideDialog by remember { mutableStateOf(false) }
     var currentTab by remember { mutableStateOf(NavTab.HOME) }
 
     val isGameActive = uiState.isPlaying || uiState.showGameOver || uiState.showLevelClear || uiState.showVictory
@@ -108,7 +106,6 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
                     onStartGame = { viewModel.startGame() },
                     onOpenSkins = { currentTab = NavTab.SKINS },
                     onOpenAchievements = { currentTab = NavTab.MISSIONS },
-                    onOpenGuide = { showGuideDialog = true },
                     onOpenSettings = { currentTab = NavTab.SETTINGS }
                 )
             }
@@ -140,11 +137,5 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
                 )
             }
         }
-    }
-
-    if (showGuideDialog) {
-        PowerUpGuideDialog(
-            onDismiss = { showGuideDialog = false }
-        )
     }
 }

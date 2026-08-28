@@ -53,6 +53,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,9 +82,9 @@ fun HomeScreen(
     onStartGame: () -> Unit,
     onOpenSkins: () -> Unit,
     onOpenAchievements: () -> Unit,
-    onOpenGuide: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    var showFoodMarketDialog by remember { mutableStateOf(false) }
     val currentLevel = GameData.LEVEL_CONFIGS[uiState.currentLevelIdx.coerceIn(0, GameData.LEVEL_CONFIGS.size - 1)]
 
     Scaffold(
@@ -130,22 +134,26 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .height(52.dp)
             ) {
-                // Left Hamburger Button ☰
+                // Left Hamburger Button ☰ (Food Bazaar & Sell Market)
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .size(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .shadow(4.dp, RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFF1E293B))
-                        .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(12.dp))
-                        .clickable { onOpenSettings() }
-                        .testTag("home_settings_button"),
+                        .border(1.5.dp, Color(0xFF10B981).copy(alpha = 0.8f), RoundedCornerShape(8.dp))
+                        .clickable {
+                            SoundSynth.playClick()
+                            showFoodMarketDialog = true
+                        }
+                        .testTag("home_food_market_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Menu,
-                        contentDescription = "Menu",
-                        tint = Color(0xFFCBD5E1),
+                        contentDescription = "Food Market",
+                        tint = Color(0xFF10B981),
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -723,42 +731,16 @@ fun HomeScreen(
                     }
                 }
             }
-
-            // 7. FOODS & POWER-UPS GUIDE BUTTON (Clean informative pill)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF131D2E))
-                    .border(1.5.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                    .clickable {
-                        SoundSynth.playClick()
-                        onOpenGuide()
-                    }
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .testTag("nav_guide_button"),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(text = "📖", fontSize = 18.sp)
-                    Text(
-                        text = "Foods & Power-ups Encyclopedia (55+ items)",
-                        color = Color(0xFFC4B5FD),
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "View ➔",
-                        color = Color(0xFFA78BFA),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
         }
+    }
+
+    if (showFoodMarketDialog) {
+        FoodMarketDialog(
+            uiState = uiState,
+            onSellFood = { viewModel.sellFood(it) },
+            onSellAllFoodStock = { viewModel.sellAllFoodStock(it) },
+            onRestockFood = { viewModel.restockFood(it) },
+            onDismiss = { showFoodMarketDialog = false }
+        )
     }
 }

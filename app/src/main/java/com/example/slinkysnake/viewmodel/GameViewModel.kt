@@ -68,7 +68,8 @@ data class GameUiState(
     val speedMultiplier: Float = 1.0f,
     val isSoundEnabled: Boolean = true,
     val soundVolume: Float = 0.8f,
-    val allowedFruits: Set<String> = emptySet()
+    val allowedFruits: Set<String> = emptySet(),
+    val foodInventory: Map<String, Int> = emptyMap()
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -90,7 +91,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             speedMultiplier = prefs.getSpeedMultiplier(),
             isSoundEnabled = prefs.isSoundEnabled(),
             soundVolume = prefs.getSoundVolume(),
-            allowedFruits = prefs.getAllowedFruits()
+            allowedFruits = prefs.getAllowedFruits(),
+            foodInventory = prefs.getAllFoodInventory()
         )
     )
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -220,10 +222,57 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 highScore = 0,
                 unlockedLevel = 1,
                 currentLevelIdx = 0,
-                unlockedAchievements = emptySet()
+                coins = prefs.getCoins(),
+                unlockedAchievements = emptySet(),
+                foodInventory = prefs.getAllFoodInventory()
             )
         }
         SoundSynth.playClick()
+    }
+
+    fun sellFood(foodType: String): Boolean {
+        val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return false
+        val currentStock = prefs.getFoodStock(foodType)
+        if (currentStock <= 0) return false
+
+        val newStock = prefs.addFoodStock(foodType, -1)
+        val newCoins = prefs.addCoins(template.sellPrice)
+        SoundSynth.playCoin()
+        _uiState.update {
+            it.copy(
+                coins = newCoins,
+                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, newStock) }
+            )
+        }
+        return true
+    }
+
+    fun sellAllFoodStock(foodType: String): Int {
+        val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return 0
+        val currentStock = prefs.getFoodStock(foodType)
+        if (currentStock <= 0) return 0
+
+        val earnedCoins = currentStock * template.sellPrice
+        prefs.setFoodStock(foodType, 0)
+        val newCoins = prefs.addCoins(earnedCoins)
+        SoundSynth.playCoin()
+        _uiState.update {
+            it.copy(
+                coins = newCoins,
+                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, 0) }
+            )
+        }
+        return earnedCoins
+    }
+
+    fun restockFood(foodType: String, count: Int = 3) {
+        val newStock = prefs.addFoodStock(foodType, count)
+        SoundSynth.playClick()
+        _uiState.update {
+            it.copy(
+                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, newStock) }
+            )
+        }
     }
 
     private val directionQueue = ArrayDeque<Direction>()
@@ -621,6 +670,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val spawnBooster = (nextEaten > 0 && nextEaten % 10 == 0)
         val obstacles = if (state.gameMode == GameMode.CLASSIC) emptyList() else GameData.LEVEL_CONFIGS[state.currentLevelIdx].obstacles
         val nextFood = spawnFood(newSnake, obstacles, spawnBooster)
+        val updatedFoodStock = prefs.addFoodStock(food.type, 1)
 
         createExplosion(food.position.x, food.position.y, food.color, 12)
         addFloatingText("+$earned${if (multiplier > 1) " (x$multiplier)" else ""}", food.position.x, food.position.y, food.color)
@@ -640,6 +690,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 foodEatenCount = nextEaten,
                 boosterEatenCount = boosterCount,
                 food = nextFood,
+                foodInventory = it.foodInventory.toMutableMap().apply { put(food.type, updatedFoodStock) },
                 bannerMessage = bannerToDisplay ?: it.bannerMessage,
                 bannerExpiryTime = if (bannerToDisplay != null) 2000L else it.bannerExpiryTime,
                 activeEffects = newEffects,

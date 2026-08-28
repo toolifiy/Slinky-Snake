@@ -153,6 +153,29 @@ class PreferencesManager(context: Context) {
         prefs.edit().putStringSet("snake_allowed_fruits", fruits).apply()
     }
 
+    fun getFoodStock(foodType: String): Int {
+        // Default starter stock of 5 for every food so player can sell immediately!
+        return prefs.getInt("snake_food_stock_$foodType", 5)
+    }
+
+    fun setFoodStock(foodType: String, count: Int) {
+        prefs.edit().putInt("snake_food_stock_$foodType", count.coerceAtLeast(0)).apply()
+    }
+
+    fun addFoodStock(foodType: String, amount: Int = 1): Int {
+        val updated = (getFoodStock(foodType) + amount).coerceAtLeast(0)
+        setFoodStock(foodType, updated)
+        return updated
+    }
+
+    fun getAllFoodInventory(): Map<String, Int> {
+        val map = mutableMapOf<String, Int>()
+        GameData.ALL_FOOD_TEMPLATES.forEach { food ->
+            map[food.type] = getFoodStock(food.type)
+        }
+        return map
+    }
+
     fun resetAllProgress() {
         prefs.edit().clear().apply()
     }
