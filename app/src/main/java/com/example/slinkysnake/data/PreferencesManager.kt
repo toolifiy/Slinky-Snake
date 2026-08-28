@@ -96,6 +96,21 @@ class PreferencesManager(context: Context) {
         return false
     }
 
+    fun getClaimedAchievements(): Set<String> {
+        return prefs.getStringSet("snake_claimed_achievements", emptySet()) ?: emptySet()
+    }
+
+    fun claimAchievement(achievementId: String, rewardCoins: Int): Boolean {
+        val current = getClaimedAchievements().toMutableSet()
+        if (!current.contains(achievementId)) {
+            current.add(achievementId)
+            prefs.edit().putStringSet("snake_claimed_achievements", current).apply()
+            addCoins(rewardCoins)
+            return true
+        }
+        return false
+    }
+
     fun getSpeedMultiplier(): Float {
         return prefs.getFloat("snake_speed_multiplier", 1.0f)
     }

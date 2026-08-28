@@ -20,12 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.slinkysnake.model.Direction
-import com.example.slinkysnake.ui.screens.AchievementsDialog
+import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.screens.GamePlayScreen
 import com.example.slinkysnake.ui.screens.HomeScreen
+import com.example.slinkysnake.ui.screens.MissionsScreen
 import com.example.slinkysnake.ui.screens.PowerUpGuideDialog
-import com.example.slinkysnake.ui.screens.SettingsDialog
-import com.example.slinkysnake.ui.screens.SkinSelectorDialog
+import com.example.slinkysnake.ui.screens.SettingsScreen
+import com.example.slinkysnake.ui.screens.SkinsScreen
 import com.example.slinkysnake.ui.theme.SlinkySnakeTheme
 import com.example.slinkysnake.viewmodel.GameViewModel
 
@@ -87,10 +88,8 @@ class MainActivity : ComponentActivity() {
 fun SlinkySnakeApp(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var showSkinsDialog by remember { mutableStateOf(false) }
-    var showAchievementsDialog by remember { mutableStateOf(false) }
     var showGuideDialog by remember { mutableStateOf(false) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
+    var currentTab by remember { mutableStateOf(NavTab.HOME) }
 
     val isGameActive = uiState.isPlaying || uiState.showGameOver || uiState.showLevelClear || uiState.showVictory
 
@@ -101,56 +100,51 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
             onBackToHome = { viewModel.exitGame() }
         )
     } else {
-        HomeScreen(
-            viewModel = viewModel,
-            uiState = uiState,
-            onStartGame = { viewModel.startGame() },
-            onOpenSkins = { showSkinsDialog = true },
-            onOpenAchievements = { showAchievementsDialog = true },
-            onOpenGuide = { showGuideDialog = true },
-            onOpenSettings = { showSettingsDialog = true }
-        )
-    }
-
-    // Dialogs
-    if (showSkinsDialog) {
-        SkinSelectorDialog(
-            selectedSkin = uiState.selectedSkin,
-            coins = uiState.coins,
-            unlockedSkins = uiState.unlockedSkins,
-            onSelectSkin = { skin -> viewModel.selectSkin(skin) },
-            onBuySkin = { skin -> viewModel.buySkin(skin) },
-            onDismiss = { showSkinsDialog = false }
-        )
-    }
-
-    if (showAchievementsDialog) {
-        AchievementsDialog(
-            unlockedAchievements = uiState.unlockedAchievements,
-            onDismiss = { showAchievementsDialog = false }
-        )
+        when (currentTab) {
+            NavTab.HOME -> {
+                HomeScreen(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    onStartGame = { viewModel.startGame() },
+                    onOpenSkins = { currentTab = NavTab.SKINS },
+                    onOpenAchievements = { currentTab = NavTab.MISSIONS },
+                    onOpenGuide = { showGuideDialog = true },
+                    onOpenSettings = { currentTab = NavTab.SETTINGS }
+                )
+            }
+            NavTab.MISSIONS -> {
+                MissionsScreen(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    onBackToHome = { currentTab = NavTab.HOME },
+                    onOpenSkins = { currentTab = NavTab.SKINS },
+                    onOpenSettings = { currentTab = NavTab.SETTINGS }
+                )
+            }
+            NavTab.SKINS -> {
+                SkinsScreen(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    onBackToHome = { currentTab = NavTab.HOME },
+                    onOpenMissions = { currentTab = NavTab.MISSIONS },
+                    onOpenSettings = { currentTab = NavTab.SETTINGS }
+                )
+            }
+            NavTab.SETTINGS -> {
+                SettingsScreen(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    onBackToHome = { currentTab = NavTab.HOME },
+                    onOpenMissions = { currentTab = NavTab.MISSIONS },
+                    onOpenSkins = { currentTab = NavTab.SKINS }
+                )
+            }
+        }
     }
 
     if (showGuideDialog) {
         PowerUpGuideDialog(
             onDismiss = { showGuideDialog = false }
-        )
-    }
-
-    if (showSettingsDialog) {
-        SettingsDialog(
-            currentThemeId = uiState.boardThemeId,
-            speedMultiplier = uiState.speedMultiplier,
-            isSoundEnabled = uiState.isSoundEnabled,
-            soundVolume = uiState.soundVolume,
-            allowedFruits = uiState.allowedFruits,
-            onSelectTheme = { themeId -> viewModel.setBoardTheme(themeId) },
-            onSpeedChange = { mult -> viewModel.setSpeedMultiplier(mult) },
-            onSoundToggle = { enabled -> viewModel.setSoundEnabled(enabled) },
-            onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
-            onFruitToggle = { fruit -> viewModel.toggleFruit(fruit) },
-            onResetProgress = { viewModel.resetAllProgress() },
-            onDismiss = { showSettingsDialog = false }
         )
     }
 }

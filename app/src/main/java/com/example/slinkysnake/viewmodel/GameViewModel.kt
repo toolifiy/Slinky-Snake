@@ -61,6 +61,7 @@ data class GameUiState(
     val unlockedSkins: Set<String> = setOf("slinky"),
     val coins: Int = 100,
     val unlockedAchievements: Set<String> = emptySet(),
+    val claimedAchievements: Set<String> = emptySet(),
     val boardThemeId: String = "mint",
     val boardThemeColor1: Long = 0xFFC2F5D3,
     val boardThemeColor2: Long = 0xFFE6FCEE,
@@ -82,6 +83,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             unlockedSkins = prefs.getUnlockedSkinIds(),
             coins = prefs.getCoins(),
             unlockedAchievements = prefs.getUnlockedAchievements(),
+            claimedAchievements = prefs.getClaimedAchievements(),
             boardThemeId = prefs.getBoardTheme(),
             boardThemeColor1 = (GameData.BOARD_THEMES.find { it.id == prefs.getBoardTheme() } ?: GameData.BOARD_THEMES[0]).color1,
             boardThemeColor2 = (GameData.BOARD_THEMES.find { it.id == prefs.getBoardTheme() } ?: GameData.BOARD_THEMES[0]).color2,
@@ -753,6 +755,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun triggerScreenShake(amount: Float) {
         _uiState.update { it.copy(screenShake = amount) }
+    }
+
+    fun claimAchievement(id: String, rewardCoins: Int) {
+        if (prefs.claimAchievement(id, rewardCoins)) {
+            SoundSynth.playAchievement()
+            _uiState.update {
+                it.copy(
+                    coins = prefs.getCoins(),
+                    claimedAchievements = prefs.getClaimedAchievements()
+                )
+            }
+        }
     }
 
     private fun unlockAchievementDirect(id: String) {

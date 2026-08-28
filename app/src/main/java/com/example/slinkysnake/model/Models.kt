@@ -81,7 +81,11 @@ data class Achievement(
     val id: String,
     val title: String,
     val description: String,
-    val icon: String
+    val icon: String,
+    val category: String = "ALL",
+    val rewardCoins: Int = 50,
+    val targetGoal: Int = 1,
+    val accentColor: Long = 0xFF10B981
 )
 
 enum class FoodCategory {

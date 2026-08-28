@@ -65,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slinkysnake.data.GameData
 import com.example.slinkysnake.model.GameMode
+import com.example.slinkysnake.ui.components.BottomGameNavBar
+import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.components.SnakeHeadCanvas
 import com.example.slinkysnake.viewmodel.GameUiState
 import com.example.slinkysnake.viewmodel.GameViewModel
@@ -87,6 +89,7 @@ fun HomeScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BottomGameNavBar(
+                selectedTab = NavTab.HOME,
                 onHomeClick = {
                     SoundSynth.playClick()
                 },
@@ -169,10 +172,10 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .shadow(4.dp, RoundedCornerShape(14.dp))
-                        .clip(RoundedCornerShape(14.dp))
+                        .shadow(4.dp, RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFF1E293B))
-                        .border(1.5.dp, Color(0xFFF59E0B), RoundedCornerShape(14.dp))
+                        .border(1.5.dp, Color(0xFFF59E0B), RoundedCornerShape(8.dp))
                         .clickable {
                             SoundSynth.playCoin()
                             onOpenSkins()
@@ -231,14 +234,14 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFF131D2E))
-                    .border(2.dp, Color(0xFF1E293B), RoundedCornerShape(20.dp))
-                    .padding(5.dp)
+                    .border(2.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                    .padding(4.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     val isClassic = uiState.gameMode == GameMode.CLASSIC
                     val isLevels = uiState.gameMode == GameMode.LEVELS
@@ -247,14 +250,14 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isClassic) Color(0xFF10B981) else Color.Transparent
                             )
                             .border(
                                 width = if (isClassic) 2.dp else 0.dp,
                                 color = if (isClassic) Color(0xFF059669) else Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(8.dp)
                             )
                             .clickable { viewModel.setGameMode(GameMode.CLASSIC) }
                             .padding(vertical = 12.dp)
@@ -273,14 +276,14 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isLevels) Color(0xFF8B5CF6) else Color.Transparent
                             )
                             .border(
                                 width = if (isLevels) 2.dp else 0.dp,
                                 color = if (isLevels) Color(0xFF7C3AED) else Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(8.dp)
                             )
                             .clickable { viewModel.setGameMode(GameMode.LEVELS) }
                             .padding(vertical = 12.dp)
@@ -291,13 +294,13 @@ fun HomeScreen(
                             text = "🗺️ Levels Mode",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 13.5.sp,
-                            color = if (isLevels) Color.White else Color(0xFF94A3B8)
+                            color = if (isLevels) Color(0xFF0F172A) else Color(0xFF94A3B8)
                         )
                     }
                 }
             }
 
-            // 4. WORLD SELECTOR CARD (Shown when Levels Mode is selected - Exact Match to Screenshot 1)
+            // 4. WORLD SELECTOR CARD (Shown when Levels Mode is selected)
             AnimatedVisibility(
                 visible = uiState.gameMode == GameMode.LEVELS,
                 enter = fadeIn(),
@@ -306,15 +309,15 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFF8B5CF6), RoundedCornerShape(24.dp))
-                        .padding(14.dp)
+                        .border(2.dp, Color(0xFF8B5CF6), RoundedCornerShape(10.dp))
+                        .padding(12.dp)
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // World Header Row: Left "🗺️ SELECT WORLD (SWIPE/SCROLL ➔)", Right "10/25 Unlocked"
+                        // World Header Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -329,7 +332,7 @@ fun HomeScreen(
                             )
 
                             Surface(
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(6.dp),
                                 color = Color(0xFF3B0764)
                             ) {
                                 Text(
@@ -360,7 +363,7 @@ fun HomeScreen(
                                     Box(
                                         modifier = Modifier
                                             .size(width = 64.dp, height = 60.dp)
-                                            .clip(RoundedCornerShape(16.dp))
+                                            .clip(RoundedCornerShape(8.dp))
                                             .background(
                                                 when {
                                                     isSelected -> Color(0xFF8B5CF6)
@@ -371,7 +374,7 @@ fun HomeScreen(
                                             .border(
                                                 width = if (isSelected) 2.dp else 1.dp,
                                                 color = if (isSelected) Color(0xFFC084FC) else Color(0xFF334155),
-                                                shape = RoundedCornerShape(16.dp)
+                                                shape = RoundedCornerShape(8.dp)
                                             )
                                             .testTag("level_item_${level.level}"),
                                         contentAlignment = Alignment.Center
@@ -402,7 +405,7 @@ fun HomeScreen(
                                         }
                                     }
 
-                                    // Purple underline indicator for selected world
+                                    // Indicator for selected world
                                     if (isSelected) {
                                         Spacer(modifier = Modifier.height(3.dp))
                                         Box(
@@ -417,13 +420,13 @@ fun HomeScreen(
                             }
                         }
 
-                        // Target Destination Pill Card
+                        // Target Destination Card
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFF0F172A))
-                                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(14.dp))
+                                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
                                 .padding(horizontal = 14.dp, vertical = 9.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -454,10 +457,10 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFFF59E0B), RoundedCornerShape(24.dp)) // Amber Border
-                        .padding(14.dp)
+                        .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(10.dp)) // Amber Border
+                        .padding(12.dp)
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -494,14 +497,14 @@ fun HomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(width = 82.dp, height = 90.dp)
-                                        .clip(RoundedCornerShape(18.dp))
+                                        .clip(RoundedCornerShape(8.dp))
                                         .background(
                                             if (isSelected) Color(0xFFF59E0B).copy(alpha = 0.2f) else Color(0xFF0F172A)
                                         )
                                         .border(
                                             width = if (isSelected) 2.dp else 1.dp,
                                             color = if (isSelected) Color(0xFFF59E0B) else Color(0xFF1E293B),
-                                            shape = RoundedCornerShape(18.dp)
+                                            shape = RoundedCornerShape(8.dp)
                                         )
                                         .clickable { viewModel.selectSkin(skin) }
                                         .padding(6.dp),
@@ -528,14 +531,14 @@ fun HomeScreen(
                 }
             }
 
-            // 5. READY TO SLITHER? HERO CARD (Exact match to Screenshots 1 & 2)
+            // 5. READY TO SLITHER? HERO CARD
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(28.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFF132034))
-                    .border(2.5.dp, Color(0xFF10B981), RoundedCornerShape(28.dp)) // Emerald Neon Border
-                    .padding(20.dp)
+                    .border(2.dp, Color(0xFF10B981), RoundedCornerShape(10.dp)) // Emerald Neon Border
+                    .padding(16.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -579,10 +582,10 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFF0F1829))
-                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(16.dp))
-                            .padding(14.dp)
+                            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
+                            .padding(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
@@ -621,10 +624,10 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
-                            .shadow(8.dp, RoundedCornerShape(18.dp))
-                            .clip(RoundedCornerShape(18.dp))
+                            .shadow(6.dp, RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFF10B981)) // Bright Emerald Green
-                            .border(2.dp, Color(0xFF059669), RoundedCornerShape(18.dp))
+                            .border(2.dp, Color(0xFF059669), RoundedCornerShape(8.dp))
                             .clickable {
                                 onStartGame()
                             }
@@ -647,10 +650,10 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xFF131D2E))
-                        .border(2.5.dp, Color(0xFFF59E0B), RoundedCornerShape(24.dp)) // Amber Border
-                        .padding(14.dp)
+                        .border(2.dp, Color(0xFFF59E0B), RoundedCornerShape(10.dp)) // Amber Border
+                        .padding(12.dp)
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -687,14 +690,14 @@ fun HomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(width = 82.dp, height = 90.dp)
-                                        .clip(RoundedCornerShape(18.dp))
+                                        .clip(RoundedCornerShape(8.dp))
                                         .background(
                                             if (isSelected) Color(0xFFF59E0B).copy(alpha = 0.2f) else Color(0xFF0F172A)
                                         )
                                         .border(
                                             width = if (isSelected) 2.dp else 1.dp,
                                             color = if (isSelected) Color(0xFFF59E0B) else Color(0xFF1E293B),
-                                            shape = RoundedCornerShape(18.dp)
+                                            shape = RoundedCornerShape(8.dp)
                                         )
                                         .clickable { viewModel.selectSkin(skin) }
                                         .padding(6.dp),
@@ -725,9 +728,9 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFF131D2E))
-                    .border(1.5.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(18.dp))
+                    .border(1.5.dp, Color(0xFF8B5CF6).copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                     .clickable {
                         SoundSynth.playClick()
                         onOpenGuide()
@@ -756,127 +759,6 @@ fun HomeScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun BottomGameNavBar(
-    onHomeClick: () -> Unit,
-    onMissionsClick: () -> Unit,
-    onSkinsClick: () -> Unit,
-    onSettingsClick: () -> Unit
-) {
-    val navBarBottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-        color = Color(0xFF0D1527), // Sleek deep dark navy slate
-        tonalElevation = 8.dp,
-        border = BorderStroke(1.5.dp, Color(0xFF10B981).copy(alpha = 0.5f)) // Subtle emerald green top border
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = (navBarBottomInset + 2.dp).coerceAtLeast(6.dp))
-                .padding(top = 8.dp, start = 12.dp, end = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 1. 🏠 HOME (Active)
-            GameBottomNavItem(
-                icon = Icons.Default.Home,
-                label = "HOME",
-                isSelected = true,
-                activeColor = Color(0xFF10B981), // Bright Emerald Green
-                onClick = onHomeClick,
-                modifier = Modifier.weight(1f),
-                testTag = "bottom_nav_home"
-            )
-
-            // 2. 🏆 MISSIONS
-            GameBottomNavItem(
-                icon = Icons.Default.EmojiEvents,
-                label = "MISSIONS",
-                isSelected = false,
-                activeColor = Color(0xFF10B981),
-                onClick = onMissionsClick,
-                modifier = Modifier.weight(1f),
-                testTag = "bottom_nav_missions"
-            )
-
-            // 3. 🎨 SKINS
-            GameBottomNavItem(
-                icon = Icons.Default.Palette,
-                label = "SKINS",
-                isSelected = false,
-                activeColor = Color(0xFF10B981),
-                onClick = onSkinsClick,
-                modifier = Modifier.weight(1f),
-                testTag = "bottom_nav_skins"
-            )
-
-            // 4. ⚙️ SETTINGS
-            GameBottomNavItem(
-                icon = Icons.Default.Settings,
-                label = "SETTINGS",
-                isSelected = false,
-                activeColor = Color(0xFF10B981),
-                onClick = onSettingsClick,
-                modifier = Modifier.weight(1f),
-                testTag = "bottom_nav_settings"
-            )
-        }
-    }
-}
-
-@Composable
-private fun GameBottomNavItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    isSelected: Boolean,
-    activeColor: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    testTag: String
-) {
-    val contentColor = if (isSelected) Color(0xFF10B981) else Color(0xFF64748B)
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(
-                if (isSelected) Color(0xFF10B981).copy(alpha = 0.22f) else Color.Transparent
-            )
-            .border(
-                width = if (isSelected) 1.5.dp else 0.dp,
-                color = if (isSelected) Color(0xFF10B981).copy(alpha = 0.8f) else Color.Transparent,
-                shape = RoundedCornerShape(14.dp)
-            )
-            .clickable { onClick() }
-            .padding(vertical = 6.dp, horizontal = 4.dp)
-            .testTag(testTag),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = contentColor,
-                modifier = Modifier.size(20.dp)
-            )
-
-            Text(
-                text = label,
-                fontSize = 9.5.sp,
-                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
-                color = contentColor,
-                letterSpacing = 0.5.sp
-            )
         }
     }
 }
