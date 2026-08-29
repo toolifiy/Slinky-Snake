@@ -69,12 +69,48 @@ data class GameUiState(
     val isSoundEnabled: Boolean = true,
     val soundVolume: Float = 0.8f,
     val allowedFruits: Set<String> = emptySet(),
-    val foodInventory: Map<String, Int> = emptyMap()
+    val foodInventory: Map<String, Int> = emptyMap(),
+    val dailyMissions: List<com.example.slinkysnake.model.DailyMission> = emptyList()
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = PreferencesManager(application)
+
+    private fun loadDailyMissions(): List<com.example.slinkysnake.model.DailyMission> {
+        return listOf(
+            com.example.slinkysnake.model.DailyMission(
+                id = "eat_food",
+                title = "Fruit Feast",
+                description = "Eat 15 foods in the arena",
+                icon = "🍎",
+                targetGoal = 15,
+                currentProgress = prefs.getDailyMissionProgress("eat_food"),
+                rewardCoins = 15,
+                isClaimed = prefs.isDailyMissionClaimed("eat_food")
+            ),
+            com.example.slinkysnake.model.DailyMission(
+                id = "power_surge",
+                title = "Surge Runner",
+                description = "Eat 2 Chili or Booster items",
+                icon = "⚡",
+                targetGoal = 2,
+                currentProgress = prefs.getDailyMissionProgress("power_surge"),
+                rewardCoins = 20,
+                isClaimed = prefs.isDailyMissionClaimed("power_surge")
+            ),
+            com.example.slinkysnake.model.DailyMission(
+                id = "high_score",
+                title = "High Scorer",
+                description = "Reach 80 points in a run",
+                icon = "🏆",
+                targetGoal = 80,
+                currentProgress = prefs.getDailyMissionProgress("high_score"),
+                rewardCoins = 25,
+                isClaimed = prefs.isDailyMissionClaimed("high_score")
+            )
+        )
+    }
 
     private val _uiState = MutableStateFlow(
         GameUiState(
@@ -92,7 +128,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             isSoundEnabled = prefs.isSoundEnabled(),
             soundVolume = prefs.getSoundVolume(),
             allowedFruits = prefs.getAllowedFruits(),
-            foodInventory = prefs.getAllFoodInventory()
+            foodInventory = prefs.getAllFoodInventory(),
+            dailyMissions = emptyList()
         )
     )
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -103,7 +140,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     init {
         SoundSynth.isSoundEnabled = _uiState.value.isSoundEnabled
         SoundSynth.soundVolume = _uiState.value.soundVolume
+        _uiState.update { it.copy(dailyMissions = loadDailyMissions()) }
     }
+
 
     fun setGameMode(mode: GameMode) {
         _uiState.update {
@@ -230,25 +269,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         SoundSynth.playClick()
     }
 
-    fun sellFood(foodType: String): Boolean {
-        val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return false
-        val currentStock = prefs.getFoodStock(foodType)
-        val requiredUnits = template.unitsPerCoin
-        if (currentStock < requiredUnits) return false
-
-        val newStock = prefs.addFoodStock(foodType, -requiredUnits)
-        val newCoins = prefs.addCoins(1)
-        SoundSynth.playCoin()
-        _uiState.update {
-            it.copy(
-                coins = newCoins,
-                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, newStock) }
-            )
-        }
-        return true
-    }
-
-    fun sellAllFoodStock(foodType: String): Int {
+    fun sellFood(foodType: String): Int {
         val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return 0
         val currentStock = prefs.getFoodStock(foodType)
         val requiredUnits = template.unitsPerCoin
@@ -259,7 +280,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val remainingStock = currentStock - unitsSold
         prefs.setFoodStock(foodType, remainingStock)
         val newCoins = prefs.addCoins(coinsEarned)
-        SoundSynth.playCoin()
+        SoundSynth.playSell()
         _uiState.update {
             it.copy(
                 coins = newCoins,
@@ -267,6 +288,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
         return coinsEarned
+    }
+
+    fun sellAllFoodStock(foodType: String): Int {
+        return sellFood(foodType)
     }
 
     fun restockFood(foodType: String, count: Int = 3) {
@@ -279,7 +304,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun claimDailyMission(missionId: String) {
+        val mission = _uiState.value.dailyMissions.find { it.id == missionId } ?: return
+        if (mission.currentProgress >= mission.targetGoal && !mission.isClaimed) {
+            val success = prefs.claimDailyMission(mission.id, mission.rewardCoins)
+            if (success) {
+                SoundSynth.playSell()
+                _uiState.update {
+                    it.copy(
+                        coins = prefs.getCoins(),
+                        dailyMissions = loadDailyMissions()
+                    )
+                }
+            }
+        }
+    }
+
     private val directionQueue = ArrayDeque<Direction>()
+
 
     fun onDirectionInput(dir: Direction) {
         val currentHeadDir = if (directionQueue.isEmpty()) _uiState.value.direction else directionQueue.last()
@@ -645,7 +687,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         if (nextEaten >= 30) unlockAchievementDirect("hungry_slitherer")
         if (nextCombo >= 8) unlockAchievementDirect("combo_king")
 
+        // Daily Missions progress update
+        prefs.incrementDailyMissionProgress("eat_food", 1)
+        if (food.type == "CHILI" || food.type == "BOOSTER" || food.type == "POWER_SPEED" || food.type == "POWER_IMMORTAL") {
+            prefs.incrementDailyMissionProgress("power_surge", 1)
+        }
+        prefs.setDailyMissionProgress("high_score", nextScore)
+
         // Coins earned on food eat (+1 for normal food, +3 for special powerups/rare items)
+
         val coinsEarned = if (food.points >= 25 || multiplier > 1) 2 else 1
         val updatedCoins = prefs.addCoins(coinsEarned)
 
@@ -713,10 +763,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             it.copy(
                 isPlaying = false,
                 showGameOver = true,
-                coins = currentCoins
+                coins = currentCoins,
+                dailyMissions = loadDailyMissions()
             )
         }
     }
+
 
     private fun spawnFood(currentSnake: List<Position>, obstacles: List<Position>, forceBooster: Boolean = false): Food {
         var newPos = Position(5, 5)

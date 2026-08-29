@@ -134,3 +134,15 @@ data class ActiveEffects(
     val magnet: Long = 0L,
     val chiliCrying: Long = 0L
 )
+
+data class DailyMission(
+    val id: String,
+    val title: String,
+    val description: String,
+    val icon: String,
+    val targetGoal: Int,
+    val currentProgress: Int,
+    val rewardCoins: Int,
+    val isClaimed: Boolean = false
+)
+

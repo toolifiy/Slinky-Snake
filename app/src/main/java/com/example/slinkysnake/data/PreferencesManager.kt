@@ -176,7 +176,64 @@ class PreferencesManager(context: Context) {
         return map
     }
 
+    private fun getTodayDateString(): String {
+        return java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US).format(java.util.Date())
+    }
+
+    fun checkAndResetDailyMissions() {
+        val today = getTodayDateString()
+        val lastDate = prefs.getString("snake_daily_missions_date", "") ?: ""
+        if (lastDate != today) {
+            prefs.edit()
+                .putString("snake_daily_missions_date", today)
+                .remove("snake_daily_progress_eat_food")
+                .remove("snake_daily_progress_power_surge")
+                .remove("snake_daily_progress_high_score")
+                .remove("snake_daily_claimed_eat_food")
+                .remove("snake_daily_claimed_power_surge")
+                .remove("snake_daily_claimed_high_score")
+                .apply()
+        }
+    }
+
+    fun getDailyMissionProgress(missionId: String): Int {
+        checkAndResetDailyMissions()
+        return prefs.getInt("snake_daily_progress_$missionId", 0)
+    }
+
+    fun incrementDailyMissionProgress(missionId: String, amount: Int = 1): Int {
+        checkAndResetDailyMissions()
+        val current = getDailyMissionProgress(missionId)
+        val updated = current + amount
+        prefs.edit().putInt("snake_daily_progress_$missionId", updated).apply()
+        return updated
+    }
+
+    fun setDailyMissionProgress(missionId: String, value: Int): Int {
+        checkAndResetDailyMissions()
+        val current = getDailyMissionProgress(missionId)
+        val updated = maxOf(current, value)
+        prefs.edit().putInt("snake_daily_progress_$missionId", updated).apply()
+        return updated
+    }
+
+    fun isDailyMissionClaimed(missionId: String): Boolean {
+        checkAndResetDailyMissions()
+        return prefs.getBoolean("snake_daily_claimed_$missionId", false)
+    }
+
+    fun claimDailyMission(missionId: String, rewardCoins: Int): Boolean {
+        checkAndResetDailyMissions()
+        if (!isDailyMissionClaimed(missionId)) {
+            prefs.edit().putBoolean("snake_daily_claimed_$missionId", true).apply()
+            addCoins(rewardCoins)
+            return true
+        }
+        return false
+    }
+
     fun resetAllProgress() {
         prefs.edit().clear().apply()
     }
 }
+

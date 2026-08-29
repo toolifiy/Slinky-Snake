@@ -41,6 +41,7 @@ object SoundSynth {
 
                 loadSound(pool, cacheDir, "click", generateClickPcm())
                 loadSound(pool, cacheDir, "coin", generateCoinPcm())
+                loadSound(pool, cacheDir, "sell", generateSellPcm())
                 loadSound(pool, cacheDir, "purchase", generatePurchasePcm())
                 loadSound(pool, cacheDir, "eat_normal", generateEatPcm(350.0))
                 loadSound(pool, cacheDir, "eat_combo1", generateEatPcm(450.0))
@@ -86,6 +87,10 @@ object SoundSynth {
         play("coin")
     }
 
+    fun playSell() {
+        play("sell")
+    }
+
     fun playPurchase() {
         play("purchase")
     }
@@ -96,13 +101,8 @@ object SoundSynth {
             "GOLDEN_STAR" -> play("eat_star")
             "CHILI" -> play("eat_chili")
             else -> {
-                when {
-                    combo >= 6 -> play("eat_combo3", 1.15f)
-                    combo >= 4 -> play("eat_combo3")
-                    combo >= 2 -> play("eat_combo2")
-                    combo >= 1 -> play("eat_combo1")
-                    else -> play("eat_normal")
-                }
+                // Keep the satisfying 1st normal water/pop sound exclusively, no sharp combo sounds
+                play("eat_normal")
             }
         }
     }
@@ -152,6 +152,28 @@ object SoundSynth {
             val envelope = (1.0 - progress) * (1.0 - progress)
             val sample = sin(2.0 * PI * freq * t) * envelope * Short.MAX_VALUE * 0.50
             buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+        }
+        return buffer
+    }
+
+    private fun generateSellPcm(): ShortArray {
+        // High-energy arcade cash register & coin chime
+        val notes = listOf(587.33, 880.0, 1174.66, 1760.0) // D5, A5, D6, A6
+        val noteDurationMs = 45
+        val totalDurationMs = notes.size * noteDurationMs
+        val numSamples = (SAMPLE_RATE * (totalDurationMs / 1000.0)).toInt()
+        val buffer = ShortArray(numSamples)
+        for (noteIdx in notes.indices) {
+            val startSample = (noteIdx * noteDurationMs * SAMPLE_RATE / 1000)
+            val endSample = if (noteIdx == notes.size - 1) numSamples else ((noteIdx + 1) * noteDurationMs * SAMPLE_RATE / 1000)
+            val freq = notes[noteIdx]
+            for (i in startSample until endSample.coerceAtMost(numSamples)) {
+                val t = (i - startSample).toDouble() / SAMPLE_RATE
+                val progress = (i - startSample).toDouble() / (endSample - startSample)
+                val envelope = (1.0 - progress) * 0.95
+                val sample = (sin(2.0 * PI * freq * t) + 0.3 * sin(4.0 * PI * freq * t)) * envelope * Short.MAX_VALUE * 0.45
+                buffer[i] = sample.toInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+            }
         }
         return buffer
     }

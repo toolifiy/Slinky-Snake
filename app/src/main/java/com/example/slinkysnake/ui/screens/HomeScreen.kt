@@ -102,7 +102,7 @@ fun HomeScreen(
                     start = 14.dp,
                     end = 14.dp,
                     top = statusBarPadding + 4.dp,
-                    bottom = 18.dp
+                    bottom = 12.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -454,9 +454,10 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(118.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(1.5.dp, Color(0xFF10B981).copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                            .height(175.dp)
+                            .shadow(8.dp, RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(2.dp, Color(0xFF10B981), RoundedCornerShape(10.dp))
                             .clickable {
                                 SoundSynth.playClick()
                                 onOpenSkins()
@@ -572,6 +573,7 @@ fun HomeScreen(
     }
 }
 
+
 @Composable
 private fun ChooseSnakeHeroSection(
     uiState: GameUiState,
@@ -675,3 +677,4 @@ private fun ChooseSnakeHeroSection(
         }
     }
 }
+

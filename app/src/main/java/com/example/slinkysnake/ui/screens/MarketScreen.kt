@@ -311,7 +311,7 @@ fun MarketScreen(
                     .fillMaxWidth()
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 12.dp)
+                contentPadding = PaddingValues(bottom = 60.dp)
             ) {
                 items(filteredFoods, key = { it.type }) { food ->
                     val stock = uiState.foodInventory[food.type] ?: 0
@@ -320,16 +320,10 @@ fun MarketScreen(
                         food = food,
                         stock = stock,
                         onSell = {
-                            viewModel.sellFood(food.type)
-                            soldBannerMessage = "Sold ${food.unitsPerCoin}x ${food.emoji} for +1 🪙!"
-                        },
-                        onSellAll = {
-                            val earned = viewModel.sellAllFoodStock(food.type)
-                            soldBannerMessage = "Sold all ${food.emoji} for +$earned 🪙!"
-                        },
-                        onRestock = {
-                            viewModel.restockFood(food.type, food.unitsPerCoin)
-                            soldBannerMessage = "Restocked +${food.unitsPerCoin} ${food.emoji}!"
+                            val earned = viewModel.sellFood(food.type)
+                            if (earned > 0) {
+                                soldBannerMessage = "Sold ${food.emoji} for +$earned 🪙!"
+                            }
                         }
                     )
                 }

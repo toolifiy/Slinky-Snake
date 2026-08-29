@@ -62,8 +62,6 @@ enum class MarketCategory(val label: String, val emoji: String) {
 fun FoodMarketDialog(
     uiState: GameUiState,
     onSellFood: (String) -> Unit,
-    onSellAllFoodStock: (String) -> Unit,
-    onRestockFood: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var selectedCategory by remember { mutableStateOf(MarketCategory.ALL) }
@@ -235,7 +233,7 @@ fun FoodMarketDialog(
                             )
                         } else {
                             Text(
-                                text = "Dynamic Rarity Rates",
+                                text = "Instant One-Click Payout",
                                 color = Color(0xFF38BDF8),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -304,22 +302,14 @@ fun FoodMarketDialog(
                 ) {
                     items(filteredFoods, key = { it.type }) { food ->
                         val stock = uiState.foodInventory[food.type] ?: 0
+                        val coins = stock / food.unitsPerCoin
 
                         FoodSellItemRow(
                             food = food,
                             stock = stock,
                             onSell = {
                                 onSellFood(food.type)
-                                soldBannerMessage = "Sold ${food.unitsPerCoin}x ${food.emoji} for +1 🪙!"
-                            },
-                            onSellAll = {
-                                val coins = stock / food.unitsPerCoin
-                                onSellAllFoodStock(food.type)
-                                soldBannerMessage = "Sold all ${food.emoji} for +$coins 🪙!"
-                            },
-                            onRestock = {
-                                onRestockFood(food.type)
-                                soldBannerMessage = "Restocked +${food.unitsPerCoin} ${food.emoji}!"
+                                soldBannerMessage = "Sold ${food.emoji} for +$coins 🪙!"
                             }
                         )
                     }
@@ -333,19 +323,18 @@ fun FoodMarketDialog(
 fun FoodSellItemRow(
     food: FoodTemplate,
     stock: Int,
-    onSell: () -> Unit,
-    onSellAll: () -> Unit,
-    onRestock: () -> Unit
+    onSell: () -> Unit
 ) {
     val foodColor = Color(food.color)
     val unitsNeeded = food.unitsPerCoin
     val canSell = stock >= unitsNeeded
     val possibleCoins = stock / unitsNeeded
+    val remainder = stock % unitsNeeded
 
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = Color(0xFF1E293B),
-        border = BorderStroke(1.dp, foodColor.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, if (canSell) Color(0xFFF59E0B).copy(alpha = 0.5f) else foodColor.copy(alpha = 0.3f)),
         modifier = Modifier
             .fillMaxWidth()
             .testTag("food_row_${food.type.lowercase()}")
@@ -387,7 +376,7 @@ fun FoodSellItemRow(
 
                 Spacer(modifier = Modifier.height(2.dp))
 
-                // Rate Badge (e.g. "Rate: 20 eaten = 1 🪙" or "Rate: 1 eaten = 1 🪙")
+                // Rate Badge (e.g. "Rate: 10x = 1 🪙")
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -414,87 +403,63 @@ fun FoodSellItemRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text("📦", fontSize = 10.sp)
+                    val stockStatusText = when {
+                        stock == 0 -> "Empty (0 in stock)"
+                        canSell && remainder > 0 -> "Stock: x$stock (+$possibleCoins 🪙, $remainder will remain)"
+                        canSell -> "Stock: x$stock (+$possibleCoins 🪙 ready)"
+                        else -> "Stock: x$stock (Need ${unitsNeeded - stock} more for 1 🪙)"
+                    }
                     Text(
-                        text = if (stock > 0) "Stock: x$stock ($possibleCoins 🪙 ready)" else "Empty (0 in stock)",
+                        text = stockStatusText,
                         color = if (canSell) Color(0xFF34D399) else if (stock > 0) Color(0xFFFACC15) else Color(0xFF94A3B8),
-                        fontSize = 11.sp,
+                        fontSize = 10.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Right Action: SELL or RESTOCK
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                if (canSell) {
-                    // SELL 1 Pack Button
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFF59E0B),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .clickable { onSell() }
-                            .testTag("sell_${food.type.lowercase()}")
+            // Right Action: 1-Click SELL Button
+            if (canSell) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFFF59E0B),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { onSell() }
+                        .testTag("sell_${food.type.lowercase()}")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "SELL (${unitsNeeded}x)",
-                                color = Color(0xFF0F172A),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                            Text(
-                                text = "+1 🪙",
-                                color = Color(0xFF451A03),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black
-                            )
-                        }
-                    }
-
-                    // Sell All option if possibleCoins > 1
-                    if (possibleCoins > 1) {
                         Text(
-                            text = "Sell All (+$possibleCoins 🪙)",
-                            color = Color(0xFFFBBF24),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable { onSellAll() }
-                                .padding(2.dp)
+                            text = "SELL",
+                            color = Color(0xFF0F172A),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Text(
+                            text = "+$possibleCoins 🪙",
+                            color = Color(0xFF451A03),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black
                         )
                     }
-                } else {
-                    // Restock / Harvest for quick testing
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFF1E293B),
-                        border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.7f)),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .clickable { onRestock() }
-                            .testTag("restock_${food.type.lowercase()}")
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
-                        ) {
-                            Text("➕", fontSize = 10.sp)
-                            Text(
-                                text = "+$unitsNeeded Test",
-                                color = Color(0xFF38BDF8),
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF0F172A),
+                    border = BorderStroke(1.dp, Color(0xFF334155))
+                ) {
+                    Text(
+                        text = if (stock > 0) "${stock}/${unitsNeeded}" else "0/${unitsNeeded}",
+                        color = Color(0xFF64748B),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
                 }
             }
         }

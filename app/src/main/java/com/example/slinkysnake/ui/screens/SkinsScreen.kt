@@ -100,7 +100,6 @@ fun SkinsScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFF0A1128), // Deep Dark Luxury Gaming Canvas
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BottomGameNavBar(
                 selectedTab = NavTab.SKINS,
@@ -129,10 +128,10 @@ fun SkinsScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = statusBarPadding + 8.dp,
-                    bottom = 32.dp
+                    bottom = paddingValues.calculateBottomPadding()
                 ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             // 1. TOP HEADER (Title - Coins pill removed)
             item {
