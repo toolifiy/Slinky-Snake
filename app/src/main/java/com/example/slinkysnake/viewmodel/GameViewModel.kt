@@ -256,12 +256,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetAllProgress() {
         prefs.resetAllProgress()
+        GameData.ALL_FOOD_TEMPLATES.forEach { food ->
+            prefs.setFoodStock(food.type, 0)
+        }
+        prefs.setCoins(0)
         _uiState.update {
             it.copy(
                 highScore = 0,
                 unlockedLevel = 1,
                 currentLevelIdx = 0,
-                coins = prefs.getCoins(),
+                coins = 0,
                 unlockedAchievements = emptySet(),
                 foodInventory = prefs.getAllFoodInventory()
             )

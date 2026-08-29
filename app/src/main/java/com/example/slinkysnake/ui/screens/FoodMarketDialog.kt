@@ -77,6 +77,22 @@ fun FoodMarketDialog(
         }
     }
 
+    val sortedFoods = remember(filteredFoods, uiState.foodInventory) {
+        filteredFoods.sortedWith(
+            compareByDescending<FoodTemplate> { food ->
+                val stock = uiState.foodInventory[food.type] ?: 0
+                val canSell = stock >= food.unitsPerCoin
+                when {
+                    canSell -> 2
+                    stock > 0 -> 1
+                    else -> 0
+                }
+            }.thenByDescending { food ->
+                uiState.foodInventory[food.type] ?: 0
+            }
+        )
+    }
+
     val totalFoodStock = remember(uiState.foodInventory) {
         GameData.ALL_FOOD_TEMPLATES.sumOf { template ->
             uiState.foodInventory[template.type] ?: 0
@@ -300,7 +316,7 @@ fun FoodMarketDialog(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(filteredFoods, key = { it.type }) { food ->
+                    items(sortedFoods, key = { it.type }) { food ->
                         val stock = uiState.foodInventory[food.type] ?: 0
                         val coins = stock / food.unitsPerCoin
 

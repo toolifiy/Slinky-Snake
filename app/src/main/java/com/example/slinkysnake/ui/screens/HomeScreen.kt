@@ -1,8 +1,11 @@
 package com.example.slinkysnake.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,13 +24,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
@@ -36,6 +43,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slinkysnake.audio.SoundSynth
 import com.example.slinkysnake.data.GameData
+import com.example.slinkysnake.model.FoodCategory
+import com.example.slinkysnake.model.FoodTemplate
 import com.example.slinkysnake.model.GameMode
 import com.example.slinkysnake.model.Skin
 import com.example.slinkysnake.ui.components.BottomGameNavBar
@@ -427,16 +440,19 @@ fun HomeScreen(
                 }
             }
 
-            // 5. CHOOSE YOUR SNAKE HERO (with lock icon on locked skins, no coins text)
-            ChooseSnakeHeroSection(
-                uiState = uiState,
-                onSelectSkin = { skin ->
-                    viewModel.selectSkin(skin)
-                },
-                onOpenSkins = onOpenSkins
-            )
+            // In CLASSIC MODE: Show Choose Hero before Start Box
+            if (uiState.gameMode == GameMode.CLASSIC) {
+                // CHOOSE YOUR SNAKE HERO
+                ChooseSnakeHeroSection(
+                    uiState = uiState,
+                    onSelectSkin = { skin ->
+                        viewModel.selectSkin(skin)
+                    },
+                    onOpenSkins = onOpenSkins
+                )
+            }
 
-            // 6. READY TO SLITHER? HERO CARD WITH START BUTTON
+            // READY TO SLITHER? HERO CARD WITH START BUTTON (Restored to original full spacious size)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -450,7 +466,7 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Center Snake Avatar with Real Board Theme Background & Snake Body
+                    // Center Snake Avatar with Real Board Theme Background & Snake Body (Original 175dp size)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -569,6 +585,24 @@ fun HomeScreen(
                     }
                 }
             }
+
+            // In LEVELS MODE: Show Choose Snake Hero UNDER Start Box (No food box in levels mode)
+            if (uiState.gameMode == GameMode.LEVELS) {
+                ChooseSnakeHeroSection(
+                    uiState = uiState,
+                    onSelectSkin = { skin ->
+                        viewModel.selectSkin(skin)
+                    },
+                    onOpenSkins = onOpenSkins
+                )
+            }
+
+            // POWER-UP MENU & FOOD GUIDE SECTION: ONLY in Classic Mode, 1.5x larger box
+            if (uiState.gameMode == GameMode.CLASSIC) {
+                PowerUpMenuAndFoodGuideSection(
+                    onOpenMarket = onOpenMarket
+                )
+            }
         }
     }
 }
@@ -673,6 +707,186 @@ private fun ChooseSnakeHeroSection(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PowerUpMenuAndFoodGuideSection(
+    onOpenMarket: () -> Unit
+) {
+    // All 55+ foods available to scroll directly inside the compact container
+    val allFoods = remember { GameData.ALL_FOOD_TEMPLATES }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFF0C1425))
+            .border(2.dp, Color(0xFF10B981), RoundedCornerShape(12.dp))
+            .padding(10.dp)
+            .testTag("powerup_food_guide_section")
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Header: 🍎 Power-Up Menu & Food Guide 🍰
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "🍎 Power-Up Menu & Food Guide 🍰",
+                        color = Color(0xFF10B981),
+                        fontSize = 14.5.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Text(
+                    text = "SCROLL INSIDE TO EXPLORE 55+ FOODS & POWER-UPS",
+                    color = Color(0xFF38BDF8),
+                    fontSize = 9.5.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.8.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // Enlarged Scrollable Container with internal LazyColumn (480dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(480.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF080D18))
+                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 6.dp, vertical = 6.dp)
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp)
+                ) {
+                    items(allFoods, key = { it.type }) { food ->
+                        FoodGuideCardItem(food = food)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FoodGuideCardItem(
+    food: FoodTemplate
+) {
+    val categoryLabel = when (food.category) {
+        FoodCategory.FRESH_FRUIT -> "FRESH FRUIT 🍎"
+        FoodCategory.POWER_UP -> "POWER-UP ⚡"
+        FoodCategory.SAVORY_MEAL -> "SAVORY MEAL 🍕"
+        FoodCategory.SWEET_TREAT -> "SWEET TREAT 🍰"
+    }
+
+    val foodColor = Color(food.color)
+
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = Color(0xFF111D30),
+        border = BorderStroke(1.dp, Color(0xFF1E3A5F)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Left Emoji in Styled Box
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(foodColor.copy(alpha = 0.14f))
+                    .border(1.dp, foodColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = food.emoji,
+                    fontSize = 24.sp
+                )
+            }
+
+            // Center / Right content
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                // Top Row: Name, Tag, Points
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Text(
+                            text = food.name,
+                            color = Color.White,
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        // Category Tag
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFF0F172A),
+                            border = BorderStroke(1.dp, Color(0xFF334155))
+                        ) {
+                            Text(
+                                text = categoryLabel,
+                                color = Color(0xFF94A3B8),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    // Points Pill
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFF0C1E38),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.7f))
+                    ) {
+                        Text(
+                            text = "+${food.points} pts",
+                            color = Color(0xFF38BDF8),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                // Description
+                Text(
+                    text = food.effectDescription,
+                    color = Color(0xFF94A3B8),
+                    fontSize = 11.sp,
+                    lineHeight = 14.5.sp
+                )
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -113,25 +114,8 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
     AnimatedContent(
         targetState = if (isGameActive) "GAMEPLAY" else currentTab.name,
         transitionSpec = {
-            if (targetState == "GAMEPLAY") {
-                (slideInHorizontally(tween(260)) { it / 3 } + fadeIn(tween(260)))
-                    .togetherWith(slideOutHorizontally(tween(200)) { -it / 3 } + fadeOut(tween(200)))
-            } else if (initialState == "GAMEPLAY") {
-                (slideInHorizontally(tween(260)) { -it / 3 } + fadeIn(tween(260)))
-                    .togetherWith(slideOutHorizontally(tween(200)) { it / 3 } + fadeOut(tween(200)))
-            } else {
-                val initialIdx = getTabIndex(initialState)
-                val targetIdx = getTabIndex(targetState)
-                if (targetIdx > initialIdx) {
-                    // Moving to the right tab: enters from right (+), exits to left (-)
-                    (slideInHorizontally(tween(240)) { it / 4 } + fadeIn(tween(240)))
-                        .togetherWith(slideOutHorizontally(tween(190)) { -it / 4 } + fadeOut(tween(190)))
-                } else {
-                    // Moving to the left tab: enters from left (-), exits to right (+)
-                    (slideInHorizontally(tween(240)) { -it / 4 } + fadeIn(tween(240)))
-                        .togetherWith(slideOutHorizontally(tween(190)) { it / 4 } + fadeOut(tween(190)))
-                }
-            }
+            (fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)))
+                .togetherWith(fadeOut(animationSpec = tween(300, easing = FastOutSlowInEasing)))
         },
         label = "AppScreenTransition"
     ) { screen ->

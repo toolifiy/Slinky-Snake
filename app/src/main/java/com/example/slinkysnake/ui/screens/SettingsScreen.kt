@@ -130,7 +130,7 @@ fun SettingsScreen(
                     bottom = paddingValues.calculateBottomPadding()
                 ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             // 1. TOP HEADER (Title + Icon)
             item {

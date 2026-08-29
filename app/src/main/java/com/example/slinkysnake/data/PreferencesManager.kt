@@ -38,7 +38,7 @@ class PreferencesManager(context: Context) {
     }
 
     fun getCoins(): Int {
-        return prefs.getInt("snake_coins_balance", 100) // 100 welcome gift coins
+        return prefs.getInt("snake_coins_balance", 0) // Starts at 0 coins
     }
 
     fun setCoins(coins: Int) {
@@ -154,8 +154,8 @@ class PreferencesManager(context: Context) {
     }
 
     fun getFoodStock(foodType: String): Int {
-        // Default starter stock of 5 for every food so player can sell immediately!
-        return prefs.getInt("snake_food_stock_$foodType", 5)
+        // Default starter stock of 0 for every food — player must earn by eating in-game
+        return prefs.getInt("snake_food_stock_$foodType", 0)
     }
 
     fun setFoodStock(foodType: String, count: Int) {

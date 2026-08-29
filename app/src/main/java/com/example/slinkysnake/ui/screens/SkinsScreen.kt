@@ -131,7 +131,7 @@ fun SkinsScreen(
                     bottom = paddingValues.calculateBottomPadding()
                 ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             // 1. TOP HEADER (Title - Coins pill removed)
             item {
