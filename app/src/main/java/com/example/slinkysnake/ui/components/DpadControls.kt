@@ -53,6 +53,8 @@ fun ArcadeDpadControls(
     isPaused: Boolean,
     modifier: Modifier = Modifier
 ) {
+    var isPausePressed by remember { mutableStateOf(false) }
+
     // Outer dashed Arcade Box
     Box(
         modifier = modifier
@@ -101,18 +103,25 @@ fun ArcadeDpadControls(
                     testTag = "dpad_left"
                 )
 
-                // CENTER PAUSE (Round Orange Button)
+                // CENTER PAUSE (Round Orange Button with 3D tactile press-in)
+                val pauseBgColor = if (isPausePressed) Color(0xFFB45309) else Color(0xFFF59E0B)
+                val pauseBorderColor = if (isPausePressed) Color(0xFF78350F) else Color(0xFFD97706)
+
                 Box(
                     modifier = Modifier
                         .size(54.dp)
-                        .shadow(8.dp, CircleShape)
+                        .scale(if (isPausePressed) 0.88f else 1.0f)
+                        .shadow(if (isPausePressed) 1.dp else 8.dp, CircleShape)
                         .clip(CircleShape)
-                        .background(Color(0xFFF59E0B))
-                        .border(2.5.dp, Color(0xFFD97706), CircleShape)
+                        .background(pauseBgColor)
+                        .border(if (isPausePressed) 3.5.dp else 2.5.dp, pauseBorderColor, CircleShape)
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onPress = {
+                                    isPausePressed = true
                                     onPauseClick()
+                                    tryAwaitRelease()
+                                    isPausePressed = false
                                 }
                             )
                         }
@@ -127,7 +136,7 @@ fun ArcadeDpadControls(
                             text = if (isPaused) "PLAY" else "PAUSE",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFF0F172A),
+                            color = if (isPausePressed) Color.White else Color(0xFF0F172A),
                             lineHeight = 10.sp
                         )
                         Text(
@@ -169,14 +178,25 @@ private fun ArcadeDirButton(
 ) {
     var isPressed by remember { mutableStateOf(false) }
 
+    // When pressed, darken significantly and deeply sink into the panel
+    val activeBgColor = if (isPressed) {
+        shadowColor
+    } else {
+        backgroundColor
+    }
+
     Box(
         modifier = Modifier
             .size(width = 66.dp, height = 62.dp)
-            .scale(if (isPressed) 0.93f else 1.0f)
-            .shadow(if (isPressed) 2.dp else 6.dp, RoundedCornerShape(18.dp))
+            .scale(if (isPressed) 0.88f else 1.0f)
+            .shadow(if (isPressed) 1.dp else 7.dp, RoundedCornerShape(18.dp))
             .clip(RoundedCornerShape(18.dp))
-            .background(if (isPressed) backgroundColor.copy(alpha = 0.85f) else backgroundColor)
-            .border(2.dp, shadowColor.copy(alpha = 0.8f), RoundedCornerShape(18.dp))
+            .background(activeBgColor)
+            .border(
+                width = if (isPressed) 3.5.dp else 2.dp,
+                color = if (isPressed) Color(0xFF020617) else shadowColor.copy(alpha = 0.85f),
+                shape = RoundedCornerShape(18.dp)
+            )
             .pointerInput(direction) {
                 detectTapGestures(
                     onPress = {
@@ -191,7 +211,11 @@ private fun ArcadeDirButton(
         contentAlignment = Alignment.Center
     ) {
         // Draw crisp solid white triangle arrow
-        androidx.compose.foundation.Canvas(modifier = Modifier.size(24.dp)) {
+        androidx.compose.foundation.Canvas(
+            modifier = Modifier
+                .size(24.dp)
+                .scale(if (isPressed) 0.90f else 1.0f)
+        ) {
             val w = size.width
             val h = size.height
             val path = Path()
@@ -223,7 +247,10 @@ private fun ArcadeDirButton(
                 }
             }
 
-            drawPath(path = path, color = Color.White)
+            drawPath(
+                path = path,
+                color = if (isPressed) Color(0xFFE2E8F0) else Color.White
+            )
         }
     }
 }

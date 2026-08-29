@@ -137,18 +137,40 @@ fun GameBoardCanvas(
                 val foodColor = Color(food.color)
                 val baseRadius = cellWidth * 0.44f
 
-                // Green/colored translucent circular backdrop ring behind emoji (like screenshot)
+                // 1. Solid circular backdrop disc behind food
                 drawCircle(
-                    color = Color(0xFF10B981).copy(alpha = 0.35f),
+                    color = Color(0xFF0F172A).copy(alpha = 0.65f),
                     radius = baseRadius * 1.15f,
                     center = Offset(fx, fy)
                 )
+
+                // 2. Food Expiration Timer Ring: Depletes continuously from 360 deg to 0 deg from the exact moment it spawns (0 delay, 0 glitch)
+                val timeLeftFraction = (food.remainingLifeMs / 15000f).coerceIn(0f, 1f)
+                val ringRadius = baseRadius * 1.15f
+                // Subtle track underlay
                 drawCircle(
-                    color = Color(0xFF10B981).copy(alpha = 0.75f),
-                    radius = baseRadius * 1.15f,
+                    color = Color(0xFF334155).copy(alpha = 0.4f),
+                    radius = ringRadius,
                     center = Offset(fx, fy),
-                    style = Stroke(width = 2f)
+                    style = Stroke(width = 2.5f)
                 )
+                // Active depleting ring (Starts full at spawn, immediately ticks down clockwise)
+                if (timeLeftFraction > 0f) {
+                    val ringColor = when {
+                        timeLeftFraction > 0.4f -> Color(0xFF10B981) // Green
+                        timeLeftFraction > 0.2f -> Color(0xFFF59E0B) // Amber warning
+                        else -> Color(0xFFEF4444)                   // Red urgent
+                    }
+                    drawArc(
+                        color = ringColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f * timeLeftFraction,
+                        useCenter = false,
+                        topLeft = Offset(fx - ringRadius, fy - ringRadius),
+                        size = Size(ringRadius * 2f, ringRadius * 2f),
+                        style = Stroke(width = 2.5f, cap = StrokeCap.Round)
+                    )
+                }
 
                 // Draw Crisp Emoji with Native Canvas
                 val emojiPaint = Paint().apply {
@@ -159,21 +181,6 @@ fun GameBoardCanvas(
                 val metrics = emojiPaint.fontMetrics
                 val baseline = fy - (metrics.ascent + metrics.descent) / 2f
                 drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, emojiPaint)
-
-                // Food Expiration Timer Ring (Pausable dynamic 15 seconds)
-                val timeLeftFraction = (food.remainingLifeMs / 15000f).coerceIn(0f, 1f)
-                if (timeLeftFraction < 0.65f) {
-                    val ringRadius = baseRadius * 1.25f
-                    drawArc(
-                        color = foodColor.copy(alpha = 0.9f),
-                        startAngle = -90f,
-                        sweepAngle = 360f * timeLeftFraction,
-                        useCenter = false,
-                        topLeft = Offset(fx - ringRadius, fy - ringRadius),
-                        size = Size(ringRadius * 2f, ringRadius * 2f),
-                        style = Stroke(width = 2.5f, cap = StrokeCap.Round)
-                    )
-                }
             }
 
             // 4. Draw Snake (Clean Block-by-Block Movement with Arcade Polishing)
