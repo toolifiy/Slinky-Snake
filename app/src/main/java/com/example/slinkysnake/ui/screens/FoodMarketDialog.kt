@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -34,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -149,7 +149,7 @@ fun FoodMarketDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Dynamic Coins Pill
+                        // Coins Pill
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = Color(0xFF1E293B),
@@ -235,7 +235,7 @@ fun FoodMarketDialog(
                             )
                         } else {
                             Text(
-                                text = "Instant Coin Payout",
+                                text = "Dynamic Rarity Rates",
                                 color = Color(0xFF38BDF8),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
@@ -246,18 +246,18 @@ fun FoodMarketDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // 3. CATEGORY SEGMENTED SELECTOR (Exact 8dp modern aesthetic)
+                // 3. CATEGORY SELECTOR
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF0B132B),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B)),
+                    color = Color(0xFF1E293B),
+                    border = BorderStroke(1.dp, Color(0xFF334155)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(3.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         MarketCategory.values().forEach { cat ->
                             val isSelected = selectedCategory == cat
@@ -273,7 +273,7 @@ fun FoodMarketDialog(
                                         SoundSynth.playClick()
                                         selectedCategory = cat
                                     }
-                                    .testTag("market_cat_${cat.name.lowercase()}"),
+                                    .testTag("dialog_market_cat_${cat.name.lowercase()}"),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Row(
@@ -295,7 +295,7 @@ fun FoodMarketDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // 4. FOOD ITEMS LIST WITH SELL BUTTONS
+                // 4. FOOD SELL LIST
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -310,16 +310,16 @@ fun FoodMarketDialog(
                             stock = stock,
                             onSell = {
                                 onSellFood(food.type)
-                                soldBannerMessage = "Sold ${food.emoji} for +${food.sellPrice} 🪙!"
+                                soldBannerMessage = "Sold ${food.unitsPerCoin}x ${food.emoji} for +1 🪙!"
                             },
                             onSellAll = {
-                                val earned = stock * food.sellPrice
+                                val coins = stock / food.unitsPerCoin
                                 onSellAllFoodStock(food.type)
-                                soldBannerMessage = "Sold all ${food.emoji} for +$earned 🪙!"
+                                soldBannerMessage = "Sold all ${food.emoji} for +$coins 🪙!"
                             },
                             onRestock = {
                                 onRestockFood(food.type)
-                                soldBannerMessage = "Restocked +3 ${food.emoji}!"
+                                soldBannerMessage = "Restocked +${food.unitsPerCoin} ${food.emoji}!"
                             }
                         )
                     }
@@ -338,6 +338,9 @@ fun FoodSellItemRow(
     onRestock: () -> Unit
 ) {
     val foodColor = Color(food.color)
+    val unitsNeeded = food.unitsPerCoin
+    val canSell = stock >= unitsNeeded
+    val possibleCoins = stock / unitsNeeded
 
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -369,7 +372,7 @@ fun FoodSellItemRow(
                 )
             }
 
-            // Food Info (Name, category, stock count)
+            // Food Info
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -384,13 +387,19 @@ fun FoodSellItemRow(
 
                 Spacer(modifier = Modifier.height(2.dp))
 
+                // Rate Badge (e.g. "Rate: 20 eaten = 1 🪙" or "Rate: 1 eaten = 1 🪙")
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Category & Points
                     Text(
-                        text = "${food.category.name.replace("_", " ")} • +${food.points} PTS",
+                        text = "Rate: ${unitsNeeded}x = 1 🪙",
+                        color = Color(0xFFFBBF24),
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                    Text(
+                        text = "• +${food.points} pts",
                         color = Color(0xFF94A3B8),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium
@@ -406,8 +415,8 @@ fun FoodSellItemRow(
                 ) {
                     Text("📦", fontSize = 10.sp)
                     Text(
-                        text = if (stock > 0) "In Stock: x$stock" else "Empty (0 in pantry)",
-                        color = if (stock > 0) Color(0xFF34D399) else Color(0xFF94A3B8),
+                        text = if (stock > 0) "Stock: x$stock ($possibleCoins 🪙 ready)" else "Empty (0 in stock)",
+                        color = if (canSell) Color(0xFF34D399) else if (stock > 0) Color(0xFFFACC15) else Color(0xFF94A3B8),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -419,8 +428,8 @@ fun FoodSellItemRow(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                if (stock > 0) {
-                    // SELL 1 Button
+                if (canSell) {
+                    // SELL 1 Pack Button
                     Surface(
                         shape = RoundedCornerShape(6.dp),
                         color = Color(0xFFF59E0B),
@@ -435,13 +444,13 @@ fun FoodSellItemRow(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "SELL",
+                                text = "SELL (${unitsNeeded}x)",
                                 color = Color(0xFF0F172A),
-                                fontSize = 11.5.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Text(
-                                text = "+${food.sellPrice} 🪙",
+                                text = "+1 🪙",
                                 color = Color(0xFF451A03),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Black
@@ -449,10 +458,10 @@ fun FoodSellItemRow(
                         }
                     }
 
-                    // Sell All option if stock > 1
-                    if (stock > 1) {
+                    // Sell All option if possibleCoins > 1
+                    if (possibleCoins > 1) {
                         Text(
-                            text = "Sell All (${stock * food.sellPrice}🪙)",
+                            text = "Sell All (+$possibleCoins 🪙)",
                             color = Color(0xFFFBBF24),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -462,7 +471,7 @@ fun FoodSellItemRow(
                         )
                     }
                 } else {
-                    // Free Restock button so user can test and sell anytime!
+                    // Restock / Harvest for quick testing
                     Surface(
                         shape = RoundedCornerShape(6.dp),
                         color = Color(0xFF1E293B),
@@ -479,9 +488,9 @@ fun FoodSellItemRow(
                         ) {
                             Text("➕", fontSize = 10.sp)
                             Text(
-                                text = "+3 Free",
+                                text = "+$unitsNeeded Test",
                                 color = Color(0xFF38BDF8),
-                                fontSize = 11.sp,
+                                fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }

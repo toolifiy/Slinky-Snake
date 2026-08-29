@@ -321,15 +321,15 @@ fun MarketScreen(
                         stock = stock,
                         onSell = {
                             viewModel.sellFood(food.type)
-                            soldBannerMessage = "Sold ${food.emoji} for +${food.sellPrice} 🪙!"
+                            soldBannerMessage = "Sold ${food.unitsPerCoin}x ${food.emoji} for +1 🪙!"
                         },
                         onSellAll = {
                             val earned = viewModel.sellAllFoodStock(food.type)
                             soldBannerMessage = "Sold all ${food.emoji} for +$earned 🪙!"
                         },
                         onRestock = {
-                            viewModel.restockFood(food.type)
-                            soldBannerMessage = "Restocked +3 ${food.emoji}!"
+                            viewModel.restockFood(food.type, food.unitsPerCoin)
+                            soldBannerMessage = "Restocked +${food.unitsPerCoin} ${food.emoji}!"
                         }
                     )
                 }

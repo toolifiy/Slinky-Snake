@@ -102,7 +102,17 @@ data class FoodTemplate(
     val category: FoodCategory,
     val effectDescription: String
 ) {
-    val sellPrice: Int get() = maxOf(5, points / 2)
+    // Number of food items required to sell for 1 coin based on spawn rate / rarity
+    val unitsPerCoin: Int
+        get() = when {
+            prob >= 20 -> 20 // High spawn rate (e.g. Apple: 20 pack = 1 Coin)
+            prob >= 10 -> 10 // Common spawn rate (e.g. Banana, Orange, Chili: 10 pack = 1 Coin)
+            prob >= 7 -> 5   // Uncommon spawn rate (e.g. Watermelon, Coconut: 5 pack = 1 Coin)
+            prob >= 5 -> 2   // Rare spawn rate (e.g. Cake, Pizza, Burger, Dragon Fruit: 2 pack = 1 Coin)
+            else -> 1        // Ultra rare (1 food = 1 Coin)
+        }
+
+    val sellPrice: Int get() = 1
 }
 
 data class Food(

@@ -233,10 +233,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun sellFood(foodType: String): Boolean {
         val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return false
         val currentStock = prefs.getFoodStock(foodType)
-        if (currentStock <= 0) return false
+        val requiredUnits = template.unitsPerCoin
+        if (currentStock < requiredUnits) return false
 
-        val newStock = prefs.addFoodStock(foodType, -1)
-        val newCoins = prefs.addCoins(template.sellPrice)
+        val newStock = prefs.addFoodStock(foodType, -requiredUnits)
+        val newCoins = prefs.addCoins(1)
         SoundSynth.playCoin()
         _uiState.update {
             it.copy(
@@ -250,19 +251,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun sellAllFoodStock(foodType: String): Int {
         val template = GameData.ALL_FOOD_TEMPLATES.find { it.type == foodType } ?: return 0
         val currentStock = prefs.getFoodStock(foodType)
-        if (currentStock <= 0) return 0
+        val requiredUnits = template.unitsPerCoin
+        val coinsEarned = currentStock / requiredUnits
+        if (coinsEarned <= 0) return 0
 
-        val earnedCoins = currentStock * template.sellPrice
-        prefs.setFoodStock(foodType, 0)
-        val newCoins = prefs.addCoins(earnedCoins)
+        val unitsSold = coinsEarned * requiredUnits
+        val remainingStock = currentStock - unitsSold
+        prefs.setFoodStock(foodType, remainingStock)
+        val newCoins = prefs.addCoins(coinsEarned)
         SoundSynth.playCoin()
         _uiState.update {
             it.copy(
                 coins = newCoins,
-                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, 0) }
+                foodInventory = it.foodInventory.toMutableMap().apply { put(foodType, remainingStock) }
             )
         }
-        return earnedCoins
+        return coinsEarned
     }
 
     fun restockFood(foodType: String, count: Int = 3) {

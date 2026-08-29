@@ -14,8 +14,9 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.example.slinkysnake.model.Skin
 
 /**
- * Renders the real Board Theme background (checkered grid tiles)
- * AND the snake skin (slithering body segments + head + fruit) together!
+ * Premium arcade arena preview rendering the vibrant stadium grid background,
+ * glowing neon arena perimeter, glossy slithering snake body, expressive snake hero head,
+ * and a radiant fruit target.
  */
 @Composable
 fun SnakeArenaPreviewCanvas(
@@ -28,8 +29,8 @@ fun SnakeArenaPreviewCanvas(
         val w = size.width
         val h = size.height
 
-        // 1. Draw Board Theme Checkered Grid
-        val columns = 9
+        // 1. Draw Checkered Arcade Grid
+        val columns = 10
         val cellWidth = w / columns
         val rows = (h / cellWidth).toInt() + 1
 
@@ -47,19 +48,43 @@ fun SnakeArenaPreviewCanvas(
             }
         }
 
-        // Subtle arena grid border lines
+        // 2. Soft Ambient Lighting / Vignette
         drawRect(
-            color = Color.Black.copy(alpha = 0.15f),
-            topLeft = Offset.Zero,
-            size = size,
-            style = Stroke(width = 2f)
+            brush = Brush.radialGradient(
+                colors = listOf(Color.Transparent, Color(0x60000000)),
+                center = Offset(w * 0.5f, h * 0.5f),
+                radius = w * 0.65f
+            ),
+            size = size
         )
 
-        // 2. Draw Food Item (Apple 🍎) on the right
-        val foodX = w * 0.78f
-        val foodY = h * 0.5f
+        // Subtle neon arena border
+        drawRect(
+            brush = Brush.horizontalGradient(
+                listOf(Color(0xFF10B981).copy(alpha = 0.4f), Color(0xFF38BDF8).copy(alpha = 0.4f))
+            ),
+            topLeft = Offset.Zero,
+            size = size,
+            style = Stroke(width = 3f)
+        )
+
+        // 3. Draw Radiant Golden / Red Food Item (🍎)
+        val foodX = w * 0.80f
+        val foodY = h * 0.50f
+
+        // Food glowing aura
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x80EF4444), Color.Transparent),
+                center = Offset(foodX, foodY),
+                radius = h * 0.30f
+            ),
+            radius = h * 0.30f,
+            center = Offset(foodX, foodY)
+        )
+
         val emojiPaint = Paint().apply {
-            textSize = h * 0.32f
+            textSize = h * 0.34f
             textAlign = Paint.Align.CENTER
             isAntiAlias = true
         }
@@ -67,54 +92,66 @@ fun SnakeArenaPreviewCanvas(
         val baseline = foodY - (metrics.ascent + metrics.descent) / 2f
         drawContext.canvas.nativeCanvas.drawText("🍎", foodX, baseline, emojiPaint)
 
-        // 3. Draw Snake Body Segments & Head (Left to Center)
+        // 4. Snake Setup
         val primaryColor = Color(skin.primaryColor)
         val secondaryColor = Color(skin.secondaryColor)
 
-        val headRadius = h * 0.28f
-        val bodyRadius = headRadius * 0.72f
-        val tailRadius = headRadius * 0.55f
+        val headRadius = (h * 0.26f).coerceIn(24f, 40f)
+        val bodyRadius = headRadius * 0.76f
+        val tailRadius = headRadius * 0.58f
 
-        // Segment positions curving gently
-        val seg0Tail = Offset(w * 0.18f, h * 0.55f)
-        val seg1Body = Offset(w * 0.30f, h * 0.45f)
-        val seg2Neck = Offset(w * 0.42f, h * 0.52f)
-        val headCenter = Offset(w * 0.56f, h * 0.48f)
+        // Natural curved slither path
+        val p0Tail = Offset(w * 0.14f, h * 0.56f)
+        val p1Body1 = Offset(w * 0.25f, h * 0.44f)
+        val p2Body2 = Offset(w * 0.37f, h * 0.54f)
+        val p3Neck = Offset(w * 0.49f, h * 0.46f)
+        val headCenter = Offset(w * 0.62f, h * 0.50f)
 
-        // Drop shadow under snake
-        drawCircle(color = Color(0x30000000), radius = tailRadius * 1.1f, center = Offset(seg0Tail.x, seg0Tail.y + 4f))
-        drawCircle(color = Color(0x30000000), radius = bodyRadius * 1.1f, center = Offset(seg1Body.x, seg1Body.y + 4f))
-        drawCircle(color = Color(0x30000000), radius = bodyRadius * 1.1f, center = Offset(seg2Neck.x, seg2Neck.y + 4f))
-        drawCircle(color = Color(0x35000000), radius = headRadius * 1.1f, center = Offset(headCenter.x, headCenter.y + 5f))
+        // Drop shadows under snake
+        val shadowAlpha = 0x40000000
+        drawCircle(color = Color(shadowAlpha), radius = tailRadius * 1.1f, center = Offset(p0Tail.x, p0Tail.y + 4f))
+        drawCircle(color = Color(shadowAlpha), radius = bodyRadius * 1.1f, center = Offset(p1Body1.x, p1Body1.y + 4f))
+        drawCircle(color = Color(shadowAlpha), radius = bodyRadius * 1.1f, center = Offset(p2Body2.x, p2Body2.y + 4f))
+        drawCircle(color = Color(shadowAlpha), radius = bodyRadius * 1.1f, center = Offset(p3Neck.x, p3Neck.y + 4f))
+        drawCircle(color = Color(0x50000000), radius = headRadius * 1.15f, center = Offset(headCenter.x, headCenter.y + 5f))
 
-        // Tail segment
+        // Segment 0 (Tail)
         val tailBrush = Brush.radialGradient(
             colors = listOf(secondaryColor, primaryColor),
-            center = Offset(seg0Tail.x - tailRadius * 0.3f, seg0Tail.y - tailRadius * 0.3f),
+            center = Offset(p0Tail.x - tailRadius * 0.3f, p0Tail.y - tailRadius * 0.3f),
             radius = tailRadius * 1.3f
         )
-        drawCircle(brush = tailBrush, radius = tailRadius, center = seg0Tail)
-        drawCircle(color = Color.White.copy(alpha = 0.45f), radius = tailRadius * 0.3f, center = Offset(seg0Tail.x - tailRadius * 0.3f, seg0Tail.y - tailRadius * 0.3f))
+        drawCircle(brush = tailBrush, radius = tailRadius, center = p0Tail)
+        drawCircle(color = Color.White.copy(alpha = 0.55f), radius = tailRadius * 0.32f, center = Offset(p0Tail.x - tailRadius * 0.3f, p0Tail.y - tailRadius * 0.3f))
 
-        // Body segment 1
-        val bodyBrush1 = Brush.radialGradient(
+        // Segment 1 (Body)
+        val body1Brush = Brush.radialGradient(
             colors = listOf(primaryColor, secondaryColor),
-            center = Offset(seg1Body.x - bodyRadius * 0.3f, seg1Body.y - bodyRadius * 0.3f),
+            center = Offset(p1Body1.x - bodyRadius * 0.3f, p1Body1.y - bodyRadius * 0.3f),
             radius = bodyRadius * 1.3f
         )
-        drawCircle(brush = bodyBrush1, radius = bodyRadius, center = seg1Body)
-        drawCircle(color = Color.White.copy(alpha = 0.5f), radius = bodyRadius * 0.3f, center = Offset(seg1Body.x - bodyRadius * 0.3f, seg1Body.y - bodyRadius * 0.3f))
+        drawCircle(brush = body1Brush, radius = bodyRadius, center = p1Body1)
+        drawCircle(color = Color.White.copy(alpha = 0.55f), radius = bodyRadius * 0.32f, center = Offset(p1Body1.x - bodyRadius * 0.3f, p1Body1.y - bodyRadius * 0.3f))
 
-        // Body segment 2 (Neck)
-        val bodyBrush2 = Brush.radialGradient(
+        // Segment 2 (Body)
+        val body2Brush = Brush.radialGradient(
             colors = listOf(secondaryColor, primaryColor),
-            center = Offset(seg2Neck.x - bodyRadius * 0.3f, seg2Neck.y - bodyRadius * 0.3f),
+            center = Offset(p2Body2.x - bodyRadius * 0.3f, p2Body2.y - bodyRadius * 0.3f),
             radius = bodyRadius * 1.3f
         )
-        drawCircle(brush = bodyBrush2, radius = bodyRadius, center = seg2Neck)
-        drawCircle(color = Color.White.copy(alpha = 0.5f), radius = bodyRadius * 0.3f, center = Offset(seg2Neck.x - bodyRadius * 0.3f, seg2Neck.y - bodyRadius * 0.3f))
+        drawCircle(brush = body2Brush, radius = bodyRadius, center = p2Body2)
+        drawCircle(color = Color.White.copy(alpha = 0.55f), radius = bodyRadius * 0.32f, center = Offset(p2Body2.x - bodyRadius * 0.3f, p2Body2.y - bodyRadius * 0.3f))
 
-        // Snake Head
+        // Segment 3 (Neck)
+        val neckBrush = Brush.radialGradient(
+            colors = listOf(primaryColor, secondaryColor),
+            center = Offset(p3Neck.x - bodyRadius * 0.3f, p3Neck.y - bodyRadius * 0.3f),
+            radius = bodyRadius * 1.3f
+        )
+        drawCircle(brush = neckBrush, radius = bodyRadius, center = p3Neck)
+        drawCircle(color = Color.White.copy(alpha = 0.55f), radius = bodyRadius * 0.32f, center = Offset(p3Neck.x - bodyRadius * 0.3f, p3Neck.y - bodyRadius * 0.3f))
+
+        // Snake Hero Head
         drawRenderedSnakeHead(
             skin = skin,
             centerX = headCenter.x,

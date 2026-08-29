@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.slinkysnake.audio.SoundSynth
 import com.example.slinkysnake.model.Direction
 import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.screens.GamePlayScreen
@@ -44,6 +45,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize zero-latency audio engine immediately
+        SoundSynth.init(applicationContext)
 
         setContent {
             SlinkySnakeTheme {
@@ -90,6 +94,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private fun getTabIndex(tabName: String): Int = when (tabName) {
+    NavTab.HOME.name -> 0
+    NavTab.MARKET.name -> 1
+    NavTab.SKINS.name -> 2
+    NavTab.SETTINGS.name -> 3
+    else -> 0
+}
+
 @Composable
 fun SlinkySnakeApp(viewModel: GameViewModel) {
     val uiState by viewModel.uiState.collectAsState()
@@ -101,12 +113,24 @@ fun SlinkySnakeApp(viewModel: GameViewModel) {
     AnimatedContent(
         targetState = if (isGameActive) "GAMEPLAY" else currentTab.name,
         transitionSpec = {
-            if (targetState == "GAMEPLAY" || initialState == "GAMEPLAY") {
-                (fadeIn(animationSpec = tween(280)) + slideInHorizontally(animationSpec = tween(280)) { it / 4 })
-                    .togetherWith(fadeOut(animationSpec = tween(220)) + slideOutHorizontally(animationSpec = tween(220)) { -it / 4 })
+            if (targetState == "GAMEPLAY") {
+                (slideInHorizontally(tween(260)) { it / 3 } + fadeIn(tween(260)))
+                    .togetherWith(slideOutHorizontally(tween(200)) { -it / 3 } + fadeOut(tween(200)))
+            } else if (initialState == "GAMEPLAY") {
+                (slideInHorizontally(tween(260)) { -it / 3 } + fadeIn(tween(260)))
+                    .togetherWith(slideOutHorizontally(tween(200)) { it / 3 } + fadeOut(tween(200)))
             } else {
-                (fadeIn(animationSpec = tween(250)) + slideInHorizontally(animationSpec = tween(250)) { it / 6 })
-                    .togetherWith(fadeOut(animationSpec = tween(200)) + slideOutHorizontally(animationSpec = tween(200)) { -it / 6 })
+                val initialIdx = getTabIndex(initialState)
+                val targetIdx = getTabIndex(targetState)
+                if (targetIdx > initialIdx) {
+                    // Moving to the right tab: enters from right (+), exits to left (-)
+                    (slideInHorizontally(tween(240)) { it / 4 } + fadeIn(tween(240)))
+                        .togetherWith(slideOutHorizontally(tween(190)) { -it / 4 } + fadeOut(tween(190)))
+                } else {
+                    // Moving to the left tab: enters from left (-), exits to right (+)
+                    (slideInHorizontally(tween(240)) { -it / 4 } + fadeIn(tween(240)))
+                        .togetherWith(slideOutHorizontally(tween(190)) { it / 4 } + fadeOut(tween(190)))
+                }
             }
         },
         label = "AppScreenTransition"
