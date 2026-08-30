@@ -81,19 +81,6 @@ fun SettingsScreen(
 ) {
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 
-    val themeItems = listOf(
-        ThemeGridItem("mint", "Mint Green", Color(0xFFC2F5D3), Color(0xFF86EFAC)),
-        ThemeGridItem("crimson", "Crimson Rose", Color(0xFFFEE2E2), Color(0xFFFDA4AF)),
-        ThemeGridItem("butter", "Sweet Honey", Color(0xFFFEF3C7), Color(0xFFFDE047)),
-        ThemeGridItem("lavender", "Royal Violet", Color(0xFFFAF5FF), Color(0xFFE9D5FF)),
-        ThemeGridItem("sky", "Sky Blue", Color(0xFFDBEAFE), Color(0xFF93C5FD)),
-        ThemeGridItem("cyber", "Cyberpunk Dark", Color(0xFF38BDF8), Color(0xFF1E1B4B)),
-        ThemeGridItem("chocolate", "Cocoa Crunch", Color(0xFFFFEDD5), Color(0xFFFED7AA)),
-        ThemeGridItem("volcano", "Magma Volcano", Color(0xFFFB7185), Color(0xFF451A03)),
-        ThemeGridItem("neon_arcade", "Neon Arcade", Color(0xFFA855F7), Color(0xFF3B0764)),
-        ThemeGridItem("gold_empire", "Gold Empire", Color(0xFFFBBF24), Color(0xFF1E1B4B))
-    )
-
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     Scaffold(
@@ -438,7 +425,7 @@ fun SettingsScreen(
                 }
             }
 
-            // 5. BOARD BACKGROUND THEMES (2-Column interactive grid)
+            // 5. ALLOWED FOOD SPAWNS SELECTION
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -453,62 +440,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = "🎨 BOARD COLOR THEMES",
-                            color = Color.White,
-                            fontSize = 13.5.sp,
-                            fontWeight = FontWeight.Black
-                        )
-
-                        for (rowIndex in 0 until themeItems.size step 2) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                val item1 = themeItems[rowIndex]
-                                ThemePillItem(
-                                    item = item1,
-                                    isSelected = item1.id == uiState.boardThemeId,
-                                    onSelect = {
-                                        viewModel.setBoardTheme(item1.id)
-                                        SoundSynth.playClick()
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                if (rowIndex + 1 < themeItems.size) {
-                                    val item2 = themeItems[rowIndex + 1]
-                                    ThemePillItem(
-                                        item = item2,
-                                        isSelected = item2.id == uiState.boardThemeId,
-                                        onSelect = {
-                                            viewModel.setBoardTheme(item2.id)
-                                            SoundSynth.playClick()
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 6. ALLOWED FOOD SPAWNS SELECTION
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Text(
-                            text = "🍎 ALLOWED FOOD & POWER SPAWNS",
+                            text = "🍎 ALLOWED FOOD SPAWNS",
                             color = Color.White,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Black
@@ -566,6 +498,121 @@ fun SettingsScreen(
                                                 .border(
                                                     width = 1.5.dp,
                                                     color = if (isChecked) Color(0xFF38BDF8) else Color(0xFF475569),
+                                                    shape = RoundedCornerShape(4.dp)
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isChecked) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = "Checked",
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                if (row.size < 2) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6.5. ALLOWED SUPER POWERS SELECTION BOX (All Selected & Toggleable)
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF14132B)),
+                    border = BorderStroke(1.5.dp, Color(0xFF7C3AED).copy(alpha = 0.6f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "⚡ ALLOWED SUPER POWERS",
+                                color = Color(0xFFC084FC),
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFF065F46)
+                            ) {
+                                Text(
+                                    text = "${uiState.allowedPowers.size}/${GameData.ALL_POWER_TEMPLATES.size} ACTIVE",
+                                    color = Color(0xFF34D399),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        val powerChunks = GameData.ALL_POWER_TEMPLATES.chunked(2)
+                        for (row in powerChunks) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                for (power in row) {
+                                    val isChecked = uiState.allowedPowers.contains(power.type)
+
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isChecked) Color(0xFF2E1065) else Color(0xFF0F0E1E))
+                                            .border(1.dp, if (isChecked) Color(0xFFA855F7) else Color(0xFF1E1B4B), RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                viewModel.togglePower(power.type)
+                                                SoundSynth.playClick()
+                                            }
+                                            .padding(vertical = 8.dp, horizontal = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text(
+                                                text = power.emoji,
+                                                fontSize = 16.sp
+                                            )
+                                            Text(
+                                                text = power.name,
+                                                color = Color.White,
+                                                fontSize = 11.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(
+                                                    if (isChecked) Color(0xFF7C3AED) else Color(0xFF1E1B4B)
+                                                )
+                                                .border(
+                                                    width = 1.5.dp,
+                                                    color = if (isChecked) Color(0xFFC084FC) else Color(0xFF475569),
                                                     shape = RoundedCornerShape(4.dp)
                                                 ),
                                             contentAlignment = Alignment.Center
@@ -692,70 +739,5 @@ private fun CareerStatPill(title: String, value: String, valueColor: Color) {
             fontWeight = FontWeight.Bold,
             color = Color(0xFF94A3B8)
         )
-    }
-}
-
-@Composable
-private fun ThemePillItem(
-    item: ThemeGridItem,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isSelected) Color(0xFF1E1B4B) else Color(0xFF1E293B))
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .clickable { onSelect() }
-            .padding(horizontal = 10.dp, vertical = 8.dp)
-            .testTag("theme_button_${item.id}")
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = item.displayName,
-                color = if (isSelected) Color.White else Color(0xFFCBD5E1),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Dual Color Swatch Capsule Preview
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0xFF0F172A))
-                    .border(
-                        1.dp,
-                        if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
-                        RoundedCornerShape(6.dp)
-                    )
-                    .padding(horizontal = 4.dp, vertical = 3.dp),
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(11.dp)
-                        .clip(CircleShape)
-                        .background(item.color1)
-                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(11.dp)
-                        .clip(CircleShape)
-                        .background(item.color2)
-                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-                )
-            }
-        }
     }
 }

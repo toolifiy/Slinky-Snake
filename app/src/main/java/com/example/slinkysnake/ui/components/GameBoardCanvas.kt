@@ -42,6 +42,7 @@ fun GameBoardCanvas(
     prevSnake: List<Position>,
     moveProgress: Float,
     food: Food?,
+    powerUp: Food? = null,
     obstacles: List<Position>,
     selectedSkin: Skin,
     gameMode: GameMode,
@@ -168,6 +169,48 @@ fun GameBoardCanvas(
                 val metrics = emojiPaint.fontMetrics
                 val baseline = fy - (metrics.ascent + metrics.descent) / 2f
                 drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, emojiPaint)
+            }
+
+            // 3b. Draw Power-Up (Spawned alongside food with 10s countdown ring)
+            if (powerUp != null) {
+                val px = powerUp.position.x * cellWidth + cellWidth / 2f + shakeX
+                val bobY = if (isPaused) 0f else sin((time + 500) / 140.0).toFloat() * (cellWidth * 0.03f)
+                val py = powerUp.position.y * cellWidth + cellWidth / 2f + shakeY + bobY
+
+                val powerColor = Color(powerUp.color)
+                val baseRadius = cellWidth * 0.44f
+
+                // Colored translucent circular backdrop ring behind powerup emoji
+                drawCircle(
+                    color = powerColor.copy(alpha = 0.35f),
+                    radius = baseRadius * 1.15f,
+                    center = Offset(px, py)
+                )
+
+                // Power-Up Expiration Timer Ring (10 seconds active duration)
+                val timeLeftFraction = (powerUp.remainingLifeMs / 10000f).coerceIn(0f, 1f)
+                val ringRadius = baseRadius * 1.15f
+                if (timeLeftFraction > 0f) {
+                    drawArc(
+                        color = powerColor.copy(alpha = 0.95f),
+                        startAngle = -90f,
+                        sweepAngle = 360f * timeLeftFraction,
+                        useCenter = false,
+                        topLeft = Offset(px - ringRadius, py - ringRadius),
+                        size = Size(ringRadius * 2f, ringRadius * 2f),
+                        style = Stroke(width = 2.5f, cap = StrokeCap.Round)
+                    )
+                }
+
+                // Draw Crisp Emoji with Native Canvas
+                val emojiPaint = Paint().apply {
+                    textSize = cellWidth * 0.76f
+                    textAlign = Paint.Align.CENTER
+                    isAntiAlias = true
+                }
+                val metrics = emojiPaint.fontMetrics
+                val baseline = py - (metrics.ascent + metrics.descent) / 2f
+                drawContext.canvas.nativeCanvas.drawText(powerUp.emoji, px, baseline, emojiPaint)
             }
 
             // 4. Draw Snake (Clean Block-by-Block Movement with Arcade Polishing)

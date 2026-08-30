@@ -121,6 +121,7 @@ fun GamePlayScreen(
                         prevSnake = uiState.prevSnake,
                         moveProgress = uiState.moveProgress,
                         food = uiState.food,
+                        powerUp = uiState.powerUp,
                         obstacles = if (uiState.gameMode == GameMode.CLASSIC) emptyList() else currentLevel.obstacles,
                         selectedSkin = uiState.selectedSkin,
                         gameMode = uiState.gameMode,
@@ -355,12 +356,14 @@ fun GamePlayScreen(
                     isSoundEnabled = uiState.isSoundEnabled,
                     soundVolume = uiState.soundVolume,
                     allowedFruits = uiState.allowedFruits,
+                    allowedPowers = uiState.allowedPowers,
                     selectedSkin = uiState.selectedSkin,
                     onSelectTheme = { themeId -> viewModel.setBoardTheme(themeId) },
                     onSpeedChange = { speed -> viewModel.setSpeedMultiplier(speed) },
                     onSoundToggle = { enabled -> viewModel.setSoundEnabled(enabled) },
                     onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
                     onFruitToggle = { fruitType -> viewModel.toggleFruit(fruitType) },
+                    onPowerToggle = { powerType -> viewModel.togglePower(powerType) },
                     onSelectSkin = { skin -> viewModel.selectSkin(skin) },
                     onDismiss = {
                         showMenuDialog = false

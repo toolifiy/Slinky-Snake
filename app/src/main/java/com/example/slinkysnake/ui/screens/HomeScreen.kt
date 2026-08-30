@@ -1,10 +1,5 @@
 package com.example.slinkysnake.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -33,14 +27,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,10 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slinkysnake.audio.SoundSynth
 import com.example.slinkysnake.data.GameData
-import com.example.slinkysnake.model.FoodCategory
-import com.example.slinkysnake.model.FoodTemplate
+import com.example.slinkysnake.model.BoardTheme
 import com.example.slinkysnake.model.GameMode
 import com.example.slinkysnake.model.Skin
+import com.example.slinkysnake.ui.components.BackgroundThemeThumbnailCanvas
 import com.example.slinkysnake.ui.components.BottomGameNavBar
 import com.example.slinkysnake.ui.components.NavTab
 import com.example.slinkysnake.ui.components.SnakeArenaPreviewCanvas
@@ -79,6 +70,8 @@ fun HomeScreen(
     onOpenMarket: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    var showFoodGuideDialog by remember { mutableStateOf(false) }
+
     val currentLevel = GameData.LEVEL_CONFIGS[uiState.currentLevelIdx.coerceIn(0, GameData.LEVEL_CONFIGS.size - 1)]
 
     Scaffold(
@@ -115,18 +108,18 @@ fun HomeScreen(
                     start = 14.dp,
                     end = 14.dp,
                     top = statusBarPadding + 4.dp,
-                    bottom = 12.dp
+                    bottom = 16.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 1. TOP BAR (Hamburger Menu, Snake Avatar, Coins Balance)
+            // 1. TOP BAR (3-Line Hamburger Menu -> Food & Powers Guide, Snake Avatar, Coins Balance)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
             ) {
-                // Left Hamburger Button ☰ (Food Bazaar & Sell Market)
+                // Left Hamburger Button ☰ (Opens Food Menu & Super Powers Box Dialog)
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -137,14 +130,14 @@ fun HomeScreen(
                         .border(1.5.dp, Color(0xFF10B981).copy(alpha = 0.8f), RoundedCornerShape(8.dp))
                         .clickable {
                             SoundSynth.playClick()
-                            onOpenMarket()
+                            showFoodGuideDialog = true
                         }
-                        .testTag("home_food_market_button"),
+                        .testTag("home_food_guide_menu_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Menu,
-                        contentDescription = "Food Market",
+                        contentDescription = "Food & Powers Guide",
                         tint = Color(0xFF10B981),
                         modifier = Modifier.size(22.dp)
                     )
@@ -218,87 +211,145 @@ fun HomeScreen(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "A magical journey filled with shining stars, spicy chilies, and golden crowns! ✨⭐",
-                    fontSize = 11.sp,
-                    color = Color(0xFFCBD5E1),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 14.sp,
-                    modifier = Modifier.padding(horizontal = 6.dp)
+                    text = "Choose your mode, master high scores & unlock VIP rewards!",
+                    fontSize = 11.5.sp,
+                    color = Color(0xFF94A3B8),
+                    textAlign = TextAlign.Center
                 )
             }
 
-            // 3. MODE SELECTOR (Classic Mode vs Levels Mode)
-            Box(
+            // 3. STATS BAR (High Score, Best World, Total Fruits Eaten)
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF131D2E))
-                    .border(1.5.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
-                    .padding(3.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF0F172A))
+                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
+                    .padding(vertical = 8.dp, horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    val isClassic = uiState.gameMode == GameMode.CLASSIC
-                    val isLevels = uiState.gameMode == GameMode.LEVELS
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🏆 HIGH SCORE",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF94A3B8)
+                    )
+                    Text(
+                        text = "${uiState.highScore}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFFFBBF24)
+                    )
+                }
 
-                    // Left Pill: ♾️ Classic Mode
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isClassic) Color(0xFF10B981) else Color.Transparent)
-                            .border(
-                                width = if (isClassic) 1.5.dp else 0.dp,
-                                color = if (isClassic) Color(0xFF059669) else Color.Transparent,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable { viewModel.setGameMode(GameMode.CLASSIC) }
-                            .padding(vertical = 10.dp)
-                            .testTag("mode_classic_card"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "♾️ Classic Mode",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 13.sp,
-                            color = if (isClassic) Color(0xFF0F172A) else Color(0xFF94A3B8)
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(26.dp)
+                        .background(Color(0xFF334155))
+                )
 
-                    // Right Pill: 🗺️ Levels Mode
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isLevels) Color(0xFF8B5CF6) else Color.Transparent)
-                            .border(
-                                width = if (isLevels) 1.5.dp else 0.dp,
-                                color = if (isLevels) Color(0xFF7C3AED) else Color.Transparent,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable { viewModel.setGameMode(GameMode.LEVELS) }
-                            .padding(vertical = 10.dp)
-                            .testTag("mode_levels_card"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🗺️ Levels Mode",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 13.sp,
-                            color = if (isLevels) Color(0xFF0F172A) else Color(0xFF94A3B8)
-                        )
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🌟 BEST WORLD",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF94A3B8)
+                    )
+                    Text(
+                        text = "Level ${uiState.unlockedLevel}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFFA855F7)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(26.dp)
+                        .background(Color(0xFF334155))
+                )
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "🍎 FOOD EATEN",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF94A3B8)
+                    )
+                    Text(
+                        text = "${uiState.foodEatenCount}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFF34D399)
+                    )
                 }
             }
 
-            // 4. WORLD SELECTOR CARD (Shown when Levels Mode is selected)
-            AnimatedVisibility(
-                visible = uiState.gameMode == GameMode.LEVELS,
-                enter = fadeIn(),
-                exit = fadeOut()
+            // 4. GAME MODE SELECTOR (Classic Mode vs Levels Mode)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF0F172A))
+                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
+                    .padding(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // Classic Mode Button
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(
+                            if (uiState.gameMode == GameMode.CLASSIC) Color(0xFF10B981) else Color.Transparent
+                        )
+                        .clickable {
+                            SoundSynth.playClick()
+                            viewModel.setGameMode(GameMode.CLASSIC)
+                        }
+                        .padding(vertical = 7.dp)
+                        .testTag("mode_classic_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "CLASSIC MODE ♾️",
+                        color = if (uiState.gameMode == GameMode.CLASSIC) Color(0xFF0F172A) else Color(0xFF94A3B8),
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+
+                // Levels Mode Button
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(
+                            if (uiState.gameMode == GameMode.LEVELS) Color(0xFF8B5CF6) else Color.Transparent
+                        )
+                        .clickable {
+                            SoundSynth.playClick()
+                            viewModel.setGameMode(GameMode.LEVELS)
+                        }
+                        .padding(vertical = 7.dp)
+                        .testTag("mode_levels_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "LEVELS MODE 🗺️",
+                        color = if (uiState.gameMode == GameMode.LEVELS) Color.White else Color(0xFF94A3B8),
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            // 5. IF IN LEVELS MODE: Level Selector Card
+            if (uiState.gameMode == GameMode.LEVELS) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -316,25 +367,17 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "🗺️ SELECT WORLD (SWIPE ➔)",
+                                text = "🗺️ SELECT CAMPAIGN WORLD",
                                 color = Color(0xFFC084FC),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 0.6.sp
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
                             )
-
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFF3B0764)
-                            ) {
-                                Text(
-                                    text = "${uiState.unlockedLevel}/25 Unlocked",
-                                    color = Color(0xFFE9D5FF),
-                                    fontSize = 10.5.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
+                            Text(
+                                text = "Level ${uiState.currentLevelIdx + 1} of ${GameData.LEVEL_CONFIGS.size}",
+                                color = Color(0xFF94A3B8),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
 
                         // World Horizontal Scroll
@@ -440,19 +483,16 @@ fun HomeScreen(
                 }
             }
 
-            // In CLASSIC MODE: Show Choose Hero before Start Box
-            if (uiState.gameMode == GameMode.CLASSIC) {
-                // CHOOSE YOUR SNAKE HERO
-                ChooseSnakeHeroSection(
-                    uiState = uiState,
-                    onSelectSkin = { skin ->
-                        viewModel.selectSkin(skin)
-                    },
-                    onOpenSkins = onOpenSkins
-                )
-            }
+            // 6. CHOOSE YOUR SNAKE HERO SECTION (Above Start Box)
+            ChooseSnakeHeroSection(
+                uiState = uiState,
+                onSelectSkin = { skin ->
+                    viewModel.selectSkin(skin)
+                },
+                onOpenSkins = onOpenSkins
+            )
 
-            // READY TO SLITHER? HERO CARD WITH START BUTTON (Restored to original full spacious size)
+            // 7. READY TO SLITHER? HERO CARD WITH START BUTTON
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -466,7 +506,7 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Center Snake Avatar with Real Board Theme Background & Snake Body (Original 175dp size)
+                    // Center Snake Avatar with Real Board Theme Background & Snake Body
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -586,27 +626,25 @@ fun HomeScreen(
                 }
             }
 
-            // In LEVELS MODE: Show Choose Snake Hero UNDER Start Box (No food box in levels mode)
-            if (uiState.gameMode == GameMode.LEVELS) {
-                ChooseSnakeHeroSection(
-                    uiState = uiState,
-                    onSelectSkin = { skin ->
-                        viewModel.selectSkin(skin)
-                    },
-                    onOpenSkins = onOpenSkins
-                )
-            }
-
-            // POWER-UP MENU & FOOD GUIDE SECTION: ONLY in Classic Mode, 1.5x larger box
-            if (uiState.gameMode == GameMode.CLASSIC) {
-                PowerUpMenuAndFoodGuideSection(
-                    onOpenMarket = onOpenMarket
-                )
-            }
+            // 8. CHOOSE ARENA BACKGROUND SECTION (Directly Under Start Box)
+            ChooseBackgroundThemeSection(
+                uiState = uiState,
+                onSelectTheme = { theme ->
+                    viewModel.setBoardTheme(theme.id)
+                },
+                onOpenThemes = onOpenSkins
+            )
         }
     }
-}
 
+    // FOOD & POWERS GUIDE DIALOG (Opened via 3-Line Hamburger Menu)
+    if (showFoodGuideDialog) {
+        FoodAndPowersGuideDialog(
+            uiState = uiState,
+            onDismiss = { showFoodGuideDialog = false }
+        )
+    }
+}
 
 @Composable
 private fun ChooseSnakeHeroSection(
@@ -621,6 +659,7 @@ private fun ChooseSnakeHeroSection(
             .background(Color(0xFF131D2E))
             .border(1.5.dp, Color(0xFFF59E0B), RoundedCornerShape(10.dp))
             .padding(10.dp)
+            .testTag("choose_snake_hero_section")
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -678,7 +717,6 @@ private fun ChooseSnakeHeroSection(
                             Box(contentAlignment = Alignment.Center) {
                                 SnakeHeadCanvas(skin = skin, size = 40.dp)
                                 if (!isUnlocked) {
-                                    // Lock overlay icon ONLY (no coins text per user requirement)
                                     Box(
                                         modifier = Modifier
                                             .size(22.dp)
@@ -713,182 +751,115 @@ private fun ChooseSnakeHeroSection(
 }
 
 @Composable
-private fun PowerUpMenuAndFoodGuideSection(
-    onOpenMarket: () -> Unit
+private fun ChooseBackgroundThemeSection(
+    uiState: GameUiState,
+    onSelectTheme: (BoardTheme) -> Unit,
+    onOpenThemes: () -> Unit
 ) {
-    // All 55+ foods available to scroll directly inside the compact container
-    val allFoods = remember { GameData.ALL_FOOD_TEMPLATES }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0C1425))
-            .border(2.dp, Color(0xFF10B981), RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFF131D2E))
+            .border(1.5.dp, Color(0xFF06B6D4), RoundedCornerShape(10.dp))
             .padding(10.dp)
-            .testTag("powerup_food_guide_section")
+            .testTag("choose_background_theme_section")
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Header: 🍎 Power-Up Menu & Food Guide 🍰
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "🍎 Power-Up Menu & Food Guide 🍰",
-                        color = Color(0xFF10B981),
-                        fontSize = 14.5.sp,
-                        fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center
-                    )
-                }
                 Text(
-                    text = "SCROLL INSIDE TO EXPLORE 55+ FOODS & POWER-UPS",
+                    text = "🖼️ Choose Arena Background! 🖼️",
+                    color = Color(0xFF22D3EE),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Black
+                )
+
+                Text(
+                    text = "View All ➔",
                     color = Color(0xFF38BDF8),
-                    fontSize = 9.5.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 0.8.sp,
-                    textAlign = TextAlign.Center
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onOpenThemes() }
                 )
             }
 
-            // Enlarged Scrollable Container with internal LazyColumn (480dp)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(480.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF080D18))
-                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 6.dp, vertical = 6.dp)
+            // Horizontal row of background theme thumbnails (Pure arena background, NO food, NO snake)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(vertical = 2.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    contentPadding = PaddingValues(vertical = 4.dp)
-                ) {
-                    items(allFoods, key = { it.type }) { food ->
-                        FoodGuideCardItem(food = food)
-                    }
-                }
-            }
-        }
-    }
-}
+                items(GameData.BOARD_THEMES, key = { it.id }) { theme ->
+                    val isSelected = theme.id == uiState.boardThemeId
+                    val isUnlocked = uiState.unlockedThemes.contains(theme.id) || theme.price == 0
 
-@Composable
-private fun FoodGuideCardItem(
-    food: FoodTemplate
-) {
-    val categoryLabel = when (food.category) {
-        FoodCategory.FRESH_FRUIT -> "FRESH FRUIT 🍎"
-        FoodCategory.POWER_UP -> "POWER-UP ⚡"
-        FoodCategory.SAVORY_MEAL -> "SAVORY MEAL 🍕"
-        FoodCategory.SWEET_TREAT -> "SWEET TREAT 🍰"
-    }
-
-    val foodColor = Color(food.color)
-
-    Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = Color(0xFF111D30),
-        border = BorderStroke(1.dp, Color(0xFF1E3A5F)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            // Left Emoji in Styled Box
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(foodColor.copy(alpha = 0.14f))
-                    .border(1.dp, foodColor.copy(alpha = 0.4f), RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = food.emoji,
-                    fontSize = 24.sp
-                )
-            }
-
-            // Center / Right content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                // Top Row: Name, Tag, Points
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.weight(1f, fill = false)
+                    Box(
+                        modifier = Modifier
+                            .size(width = 84.dp, height = 86.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isSelected) Color(0xFF06B6D4).copy(alpha = 0.2f) else Color(0xFF0F172A)
+                            )
+                            .border(
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color = if (isSelected) Color(0xFF06B6D4) else Color(0xFF1E293B),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { onSelectTheme(theme) }
+                            .padding(4.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = food.name,
-                            color = Color.White,
-                            fontSize = 13.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        // Category Tag
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = Color(0xFF0F172A),
-                            border = BorderStroke(1.dp, Color(0xFF334155))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 72.dp, height = 46.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .border(1.dp, Color(0xFF334155), RoundedCornerShape(6.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                BackgroundThemeThumbnailCanvas(
+                                    bgCol1 = theme.color1,
+                                    bgCol2 = theme.color2,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                if (!isUnlocked) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xCC0F172A))
+                                            .border(1.dp, Color(0xFFF59E0B), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Lock,
+                                            contentDescription = "Locked",
+                                            tint = Color(0xFFFBBF24),
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = categoryLabel,
-                                color = Color(0xFF94A3B8),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                text = theme.name.split(" ").firstOrNull() ?: theme.name,
+                                fontSize = 9.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Color(0xFF22D3EE) else if (isUnlocked) Color.White else Color(0xFF94A3B8),
+                                maxLines = 1
                             )
                         }
                     }
-
-                    // Points Pill
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFF0C1E38),
-                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.7f))
-                    ) {
-                        Text(
-                            text = "+${food.points} pts",
-                            color = Color(0xFF38BDF8),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
                 }
-
-                // Description
-                Text(
-                    text = food.effectDescription,
-                    color = Color(0xFF94A3B8),
-                    fontSize = 11.sp,
-                    lineHeight = 14.5.sp
-                )
             }
         }
     }
 }
-

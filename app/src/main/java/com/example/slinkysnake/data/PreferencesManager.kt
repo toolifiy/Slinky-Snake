@@ -127,6 +127,28 @@ class PreferencesManager(context: Context) {
         prefs.edit().putString("snake_board_theme", themeId).apply()
     }
 
+    fun getUnlockedThemeIds(): Set<String> {
+        return prefs.getStringSet(
+            "snake_unlocked_themes",
+            setOf("mint", "crimson", "butter", "lavender", "sky")
+        ) ?: setOf("mint", "crimson", "butter", "lavender", "sky")
+    }
+
+    fun unlockTheme(themeId: String): Boolean {
+        val current = getUnlockedThemeIds().toMutableSet()
+        if (!current.contains(themeId)) {
+            current.add(themeId)
+            prefs.edit().putStringSet("snake_unlocked_themes", current).apply()
+            return true
+        }
+        return false
+    }
+
+    fun isThemeUnlocked(themeId: String): Boolean {
+        if (themeId in setOf("mint", "crimson", "butter", "lavender", "sky")) return true
+        return getUnlockedThemeIds().contains(themeId)
+    }
+
     fun isSoundEnabled(): Boolean {
         return prefs.getBoolean("snake_sound_enabled", true)
     }
@@ -151,6 +173,16 @@ class PreferencesManager(context: Context) {
 
     fun setAllowedFruits(fruits: Set<String>) {
         prefs.edit().putStringSet("snake_allowed_fruits", fruits).apply()
+    }
+
+    fun getAllowedPowers(): Set<String> {
+        // Default: All powers are selected and equipped!
+        val allPowers = GameData.ALL_POWER_TEMPLATES.map { it.type }.toSet()
+        return prefs.getStringSet("snake_allowed_powers", allPowers) ?: allPowers
+    }
+
+    fun setAllowedPowers(powers: Set<String>) {
+        prefs.edit().putStringSet("snake_allowed_powers", powers).apply()
     }
 
     fun getFoodStock(foodType: String): Int {

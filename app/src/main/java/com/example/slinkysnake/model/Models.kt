@@ -74,7 +74,9 @@ data class BoardTheme(
     val id: String,
     val name: String,
     val color1: Long,
-    val color2: Long
+    val color2: Long,
+    val price: Int = 0,
+    val description: String = ""
 )
 
 data class Achievement(
@@ -121,6 +123,7 @@ data class Food(
     val color: Long,
     val emoji: String,
     val points: Int,
+    val isPower: Boolean = false,
     val spawnTime: Long = System.currentTimeMillis(),
     val remainingLifeMs: Long = 15000L
 )
@@ -132,7 +135,9 @@ data class ActiveEffects(
     val immortal: Long = 0L,
     val doublePoints: Long = 0L,
     val magnet: Long = 0L,
-    val chiliCrying: Long = 0L
+    val chiliCrying: Long = 0L,
+    val freeze: Long = 0L,
+    val shield: Boolean = false
 )
 
 data class DailyMission(

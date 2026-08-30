@@ -511,26 +511,22 @@ object GameData {
     )
 
     val BOARD_THEMES: List<BoardTheme> = listOf(
-        BoardTheme("mint", "Mint Forest 🌿", 0xFFC2F5D3, 0xFFE6FCEE),
-        BoardTheme("crimson", "Crimson Velvet 🍎", 0xFFFCA5A5, 0xFFFEE2E2),
-        BoardTheme("butter", "Sweet Butter 🥞", 0xFFFDE68A, 0xFFFEF3C7),
-        BoardTheme("lavender", "Royal Lavender 🌌", 0xFFE9D5FF, 0xFFFAF5FF),
-        BoardTheme("sky", "Sky Bubblegum 🏖️", 0xFFBFDBFE, 0xFFDBEAFE),
-        BoardTheme("cyber", "Cyber Shadow 👾", 0xFF1E1B4B, 0xFF0B0A21),
-        BoardTheme("chocolate", "Choco Cream 🍫", 0xFFFED7AA, 0xFFFFEDD5),
-        BoardTheme("volcano", "Spicy Volcano 🌶️", 0xFFFCA5A5, 0xFF451A03),
-        BoardTheme("neon_arcade", "Neon Arcade 🔮", 0xFF581C87, 0xFF020617),
-        BoardTheme("gold_empire", "Gold Empire 👑", 0xFFFBBF24, 0xFF1E1B4B)
+        BoardTheme("mint", "Mint Forest 🌿", 0xFFC2F5D3, 0xFFE6FCEE, price = 0, description = "Fresh spring garden checkered grass arena"),
+        BoardTheme("crimson", "Crimson Velvet 🍎", 0xFFFCA5A5, 0xFFFEE2E2, price = 0, description = "Sweet velvety ruby stadium floor"),
+        BoardTheme("butter", "Sweet Butter 🥞", 0xFFFDE68A, 0xFFFEF3C7, price = 0, description = "Warm honeyed pancake waffle tiles"),
+        BoardTheme("lavender", "Royal Lavender 🌌", 0xFFE9D5FF, 0xFFFAF5FF, price = 0, description = "Dreamy mystical purple twilight court"),
+        BoardTheme("sky", "Sky Bubblegum 🏖️", 0xFFBFDBFE, 0xFFDBEAFE, price = 0, description = "Sunny coastal sea breeze checkered stadium"),
+        BoardTheme("cyber", "Cyber Shadow 👾", 0xFF1E1B4B, 0xFF0B0A21, price = 50, description = "Ultra dark synthwave neon mainframe grid"),
+        BoardTheme("chocolate", "Choco Cream 🍫", 0xFFFED7AA, 0xFFFFEDD5, price = 60, description = "Rich dessert cocoa bakery floor"),
+        BoardTheme("volcano", "Spicy Volcano 🌋", 0xFFFCA5A5, 0xFF451A03, price = 80, description = "Hot magma lava rock battle arena"),
+        BoardTheme("neon_arcade", "Neon Arcade 🔮", 0xFF581C87, 0xFF020617, price = 100, description = "Glowing ultraviolet 80s arcade court"),
+        BoardTheme("gold_empire", "Gold Empire 👑", 0xFFFBBF24, 0xFF1E1B4B, price = 120, description = "Gilded royal palace with golden glow")
     )
 
     val ALL_FOOD_TEMPLATES: List<FoodTemplate> = listOf(
-        // First 25 standard foods
+        // 50 Standard Delicious Foods (Fresh Fruit, Sweet Treats, Savory Meals)
         FoodTemplate("APPLE", "🍎", "Red Apple", 0xFFEF4444, 10, 28, FoodCategory.FRESH_FRUIT, "Fresh, juicy, and sweet standard apple."),
-        FoodTemplate("GOLDEN_STAR", "⭐", "Golden Star", 0xFFFACC15, 25, 8, FoodCategory.POWER_UP, "Explodes with glittering star particles and shakes the board!"),
-        FoodTemplate("CHILI", "🌶️", "Spicy Chili", 0xFFF97316, 15, 10, FoodCategory.POWER_UP, "FIRE MODE! 1.6x speed, burning spark trails, and crying tears!"),
-        FoodTemplate("GRAPE", "🍇", "Vibrant Grape", 0xFF8B5CF6, 15, 10, FoodCategory.POWER_UP, "CHILL MODE! Slows down movement to escape risky tight spots!"),
         FoodTemplate("CAKE", "🍰", "Feast Cake", 0xFFFF007F, 40, 5, FoodCategory.SWEET_TREAT, "Delicious sugar rush! Grows you 2 extra segments!"),
-        FoodTemplate("BOOSTER", "🧪", "Magic Potion", 0xFF3B82F6, 20, 6, FoodCategory.POWER_UP, "BLUE ELIXIR! Speed surge with magical sparkles!"),
         FoodTemplate("WATERMELON", "🍉", "Watermelon", 0xFF22C55E, 30, 8, FoodCategory.FRESH_FRUIT, "GIANT WATERMELON SPLASH! High points & red juice particles!"),
         FoodTemplate("BANANA", "🍌", "Sweet Banana", 0xFFFBBF24, 12, 10, FoodCategory.FRESH_FRUIT, "Sweet tropical banana snack."),
         FoodTemplate("COCONUT", "🥥", "Hard Coconut", 0xFF854D0E, 20, 8, FoodCategory.FRESH_FRUIT, "Hard nut crunch with wooden splinter particles."),
@@ -550,8 +546,6 @@ object GameData {
         FoodTemplate("HONEY", "🍯", "Honey Jar", 0xFFF59E0B, 30, 6, FoodCategory.SWEET_TREAT, "Golden sweet raw nectar jar."),
         FoodTemplate("WAFFLE", "🧇", "Spiced Waffle", 0xFFD97706, 25, 7, FoodCategory.SWEET_TREAT, "Crispy golden waffle grid."),
         FoodTemplate("CROISSANT", "🥐", "Croissant", 0xFFF59E0B, 20, 8, FoodCategory.SWEET_TREAT, "Flaky buttery French pastry."),
-
-        // Additional 25 standard foods
         FoodTemplate("CHERRY", "🍒", "Twin Cherries", 0xFFDC2626, 14, 10, FoodCategory.FRESH_FRUIT, "Sweet paired red cherries."),
         FoodTemplate("AVOCADO", "🥑", "Fresh Avocado", 0xFF10B981, 16, 8, FoodCategory.FRESH_FRUIT, "Creamy superfood slice."),
         FoodTemplate("DOUGHNUT", "🍩", "Glazed Donut", 0xFFEC4899, 24, 7, FoodCategory.SWEET_TREAT, "Pink glazed sprinkle donut."),
@@ -577,12 +571,21 @@ object GameData {
         FoodTemplate("PUDDING", "🍮", "Sweet Pudding", 0xFFFBBF24, 22, 8, FoodCategory.SWEET_TREAT, "Creamy caramel custard flan."),
         FoodTemplate("MILK", "🥛", "Milk Glass", 0xFFF3F4F6, 12, 10, FoodCategory.SAVORY_MEAL, "Pure fresh cold whole milk."),
         FoodTemplate("CUPCAKE", "🧁", "Cupcake", 0xFFEC4899, 32, 6, FoodCategory.SWEET_TREAT, "Frosted birthday cupcake with sprinkles."),
+        FoodTemplate("GRAPES_RED", "🍇", "Sweet Grapes", 0xFF8B5CF6, 16, 9, FoodCategory.FRESH_FRUIT, "Sweet juicy purple grape bunch."),
+        FoodTemplate("GREEN_APPLE", "🍏", "Green Apple", 0xFF4ADE80, 12, 11, FoodCategory.FRESH_FRUIT, "Crisp tart green granny smith apple."),
+        FoodTemplate("RED_PEPPER", "🫑", "Bell Pepper", 0xFFEF4444, 14, 10, FoodCategory.FRESH_FRUIT, "Fresh crunchy sweet bell pepper."),
+        FoodTemplate("ONION_SOUP", "🍲", "Warm Stew", 0xFFF59E0B, 30, 7, FoodCategory.SAVORY_MEAL, "Steaming bowl of hearty vegetable stew.")
+    )
 
-        // 5 Super Power-ups
-        FoodTemplate("POWER_SPEED", "⚡", "Hyper Speed", 0xFF38BDF8, 30, 4, FoodCategory.POWER_UP, "FIRE MODE! 1.6x speed, burning spark trails, and double combo scores!"),
-        FoodTemplate("POWER_IMMORTAL", "👻", "Ghost Immortal", 0xFFA78BFA, 30, 4, FoodCategory.POWER_UP, "GHOST MODE! Immune to wall crashes and body self-collisions!"),
-        FoodTemplate("POWER_DOUBLE", "💎", "Double Points", 0xFFF472B6, 30, 4, FoodCategory.POWER_UP, "DOUBLE DEAL! Doubles all score increments and multipliers!"),
-        FoodTemplate("POWER_MAGNET", "🧲", "Magnet Pull", 0xFFF87171, 30, 4, FoodCategory.POWER_UP, "MAGNETIC PULL! Automatically drags all nearby foods directly to you!"),
-        FoodTemplate("POWER_SHRINK", "🍄", "Shrink Shroom", 0xFF34D399, 30, 4, FoodCategory.POWER_UP, "SHRINK SHROOM! Instantly cuts your tail length by 35%!")
+    val ALL_POWER_TEMPLATES: List<FoodTemplate> = listOf(
+        FoodTemplate("POWER_SPEED", "⚡", "Hyper Speed", 0xFF38BDF8, 30, 10, FoodCategory.POWER_UP, "FIRE SPEED! Surge forward with 1.6x sprint speed & 2x combo score for 10s!"),
+        FoodTemplate("POWER_IMMORTAL", "👻", "Ghost Shield", 0xFFA78BFA, 30, 10, FoodCategory.POWER_UP, "GHOST MODE! Freely pass through boundaries, obstacles & body for 10s!"),
+        FoodTemplate("POWER_DOUBLE", "💎", "Double Points", 0xFFF472B6, 30, 10, FoodCategory.POWER_UP, "DOUBLE DEAL! Doubles all score increments, combo rewards & multipliers for 10s!"),
+        FoodTemplate("POWER_MAGNET", "🧲", "Magnet Pull", 0xFFF87171, 30, 10, FoodCategory.POWER_UP, "MAGNETIC FORCE! Automatically draws all nearby foods directly into your mouth for 10s!"),
+        FoodTemplate("POWER_SHRINK", "🍄", "Shrink Shroom", 0xFF34D399, 30, 10, FoodCategory.POWER_UP, "SHRINK SHROOM! Instantly cuts your tail length by 35% for easy maneuvering!"),
+        FoodTemplate("BOOSTER", "🧪", "Magic Elixir", 0xFF3B82F6, 30, 10, FoodCategory.POWER_UP, "BLUE POTION! Speed surge with glowing blue magical sparkles for 10s!"),
+        FoodTemplate("GOLDEN_STAR", "⭐", "Golden Star", 0xFFFACC15, 35, 10, FoodCategory.POWER_UP, "STAR BLAST! Mega points explosion with glittering golden star burst!"),
+        FoodTemplate("POWER_FREEZE", "❄️", "Frost Chill", 0xFF06B6D4, 30, 10, FoodCategory.POWER_UP, "FROST CHILL! Slows down movement speed into chill motion for effortless precision!"),
+        FoodTemplate("POWER_SHIELD", "🛡️", "Safe Shield", 0xFFEAB308, 30, 10, FoodCategory.POWER_UP, "SAFE SHIELD! Protects you from 1 fatal crash or obstacle collision!")
     )
 }

@@ -66,27 +66,16 @@ fun SettingsDialog(
     isSoundEnabled: Boolean,
     soundVolume: Float,
     allowedFruits: Set<String>,
+    allowedPowers: Set<String> = emptySet(),
     onSelectTheme: (String) -> Unit,
     onSpeedChange: (Float) -> Unit,
     onSoundToggle: (Boolean) -> Unit,
     onVolumeChange: (Float) -> Unit,
     onFruitToggle: (String) -> Unit,
+    onPowerToggle: (String) -> Unit = {},
     onResetProgress: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val themeItems = listOf(
-        ThemeGridItem("mint", "Mint", Color(0xFFC2F5D3), Color(0xFF86EFAC)),
-        ThemeGridItem("crimson", "Crimson", Color(0xFFFEE2E2), Color(0xFFFDA4AF)),
-        ThemeGridItem("butter", "Sweet", Color(0xFFFEF3C7), Color(0xFFFDE047)),
-        ThemeGridItem("lavender", "Royal", Color(0xFFFAF5FF), Color(0xFFE9D5FF)),
-        ThemeGridItem("sky", "Sky", Color(0xFFDBEAFE), Color(0xFF93C5FD)),
-        ThemeGridItem("cyber", "Cyber", Color(0xFF38BDF8), Color(0xFF1E1B4B)),
-        ThemeGridItem("chocolate", "Choco", Color(0xFFFFEDD5), Color(0xFFFED7AA)),
-        ThemeGridItem("volcano", "Spicy", Color(0xFFFB7185), Color(0xFF451A03)),
-        ThemeGridItem("neon_arcade", "Neon", Color(0xFFA855F7), Color(0xFF3B0764)),
-        ThemeGridItem("gold_empire", "Gold", Color(0xFFFBBF24), Color(0xFF1E1B4B))
-    )
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -391,51 +380,7 @@ fun SettingsDialog(
                             }
                         }
 
-                        // Section 2: 🎨 BOARD BACKGROUND COMBOS:
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "🎨 BOARD BACKGROUND COMBOS:",
-                                color = Color.White,
-                                fontSize = 12.5.sp,
-                                fontWeight = FontWeight.Black
-                            )
-
-                            // 2-Column Grid of 5 rows (10 items)
-                            for (rowIndex in 0 until themeItems.size step 2) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    val item1 = themeItems[rowIndex]
-                                    ThemePillCard(
-                                        item = item1,
-                                        isSelected = item1.id == currentThemeId,
-                                        onSelect = {
-                                            onSelectTheme(item1.id)
-                                            SoundSynth.playClick()
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    )
-
-                                    if (rowIndex + 1 < themeItems.size) {
-                                        val item2 = themeItems[rowIndex + 1]
-                                        ThemePillCard(
-                                            item = item2,
-                                            isSelected = item2.id == currentThemeId,
-                                            onSelect = {
-                                                onSelectTheme(item2.id)
-                                                SoundSynth.playClick()
-                                            },
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Section 3: 🍎 ALLOWED FOOD SPAWNS: (Flat non-nested 2-col list)
+                        // Section 2: 🍎 ALLOWED FOOD SPAWNS: (Flat non-nested 2-col list)
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -531,6 +476,120 @@ fun SettingsDialog(
                             }
                         }
 
+                        // Section 3.5: ⚡ ALLOWED SUPER POWERS: (Box right below Food box)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "⚡ ALLOWED SUPER POWERS:",
+                                    color = Color(0xFFC084FC),
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFF065F46)
+                                ) {
+                                    Text(
+                                        text = "${allowedPowers.size}/${GameData.ALL_POWER_TEMPLATES.size} ACTIVE",
+                                        color = Color(0xFF34D399),
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.Black,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color(0xFF14132B))
+                                    .border(1.dp, Color(0xFF7C3AED).copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                                    .padding(10.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    val powerChunks = GameData.ALL_POWER_TEMPLATES.chunked(2)
+                                    for (row in powerChunks) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            for (power in row) {
+                                                val isChecked = allowedPowers.contains(power.type)
+
+                                                Row(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                        .clickable {
+                                                            onPowerToggle(power.type)
+                                                            SoundSynth.playClick()
+                                                        }
+                                                        .padding(vertical = 4.dp, horizontal = 4.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                        modifier = Modifier.weight(1f)
+                                                    ) {
+                                                        Text(
+                                                            text = power.emoji,
+                                                            fontSize = 16.sp
+                                                        )
+                                                        Text(
+                                                            text = power.name,
+                                                            color = Color.White,
+                                                            fontSize = 11.5.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+
+                                                    // Modern Purple/Violet Checkbox
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .clip(RoundedCornerShape(5.dp))
+                                                            .background(
+                                                                if (isChecked) Color(0xFF7C3AED) else Color(0xFF1E1B4B)
+                                                            )
+                                                            .border(
+                                                                width = 1.5.dp,
+                                                                color = if (isChecked) Color(0xFFC084FC) else Color(0xFF475569),
+                                                                shape = RoundedCornerShape(5.dp)
+                                                            ),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        if (isChecked) {
+                                                            Icon(
+                                                                Icons.Default.Check,
+                                                                contentDescription = "Checked",
+                                                                tint = Color.White,
+                                                                modifier = Modifier.size(14.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (row.size < 2) {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         // Section 4: RESET GAME PROGRESS
                         Box(
                             modifier = Modifier
@@ -601,69 +660,4 @@ fun SettingsDialog(
         }
     }
 }
-}
-
-@Composable
-private fun ThemePillCard(
-    item: ThemeGridItem,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) Color(0xFF1E1B4B) else Color(0xFF1E293B))
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable { onSelect() }
-            .padding(horizontal = 10.dp, vertical = 7.dp)
-            .testTag("theme_button_${item.id}")
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = item.displayName,
-                color = if (isSelected) Color.White else Color(0xFFCBD5E1),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Dual Color Swatch Capsule Preview
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF0F172A))
-                    .border(
-                        1.dp,
-                        if (isSelected) Color(0xFF8B5CF6) else Color(0xFF334155),
-                        RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 4.dp, vertical = 3.dp),
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(11.dp)
-                        .clip(CircleShape)
-                        .background(item.color1)
-                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(11.dp)
-                        .clip(CircleShape)
-                        .background(item.color2)
-                        .border(0.5.dp, Color.White.copy(alpha = 0.25f), CircleShape)
-                )
-            }
-        }
-    }
 }

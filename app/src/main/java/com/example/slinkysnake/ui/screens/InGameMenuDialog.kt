@@ -55,12 +55,14 @@ fun InGameMenuDialog(
     isSoundEnabled: Boolean,
     soundVolume: Float,
     allowedFruits: Set<String>,
+    allowedPowers: Set<String> = emptySet(),
     selectedSkin: Skin,
     onSelectTheme: (String) -> Unit,
     onSpeedChange: (Float) -> Unit,
     onSoundToggle: (Boolean) -> Unit,
     onVolumeChange: (Float) -> Unit,
     onFruitToggle: (String) -> Unit,
+    onPowerToggle: (String) -> Unit = {},
     onSelectSkin: (Skin) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -458,6 +460,120 @@ fun InGameMenuDialog(
                                         }
                                         if (row.size < 2) {
                                             Spacer(modifier = Modifier.weight(1f))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Section 3.5: ⚡ ALLOWED SUPER POWERS (Box right below Food box)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "⚡ ALLOWED SUPER POWERS",
+                                    color = Color(0xFFC084FC),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFF065F46)
+                                ) {
+                                    Text(
+                                        text = "${allowedPowers.size}/${GameData.ALL_POWER_TEMPLATES.size} ACTIVE",
+                                        color = Color(0xFF34D399),
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Black,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF14132B))
+                                    .border(1.dp, Color(0xFF7C3AED).copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                                    .padding(8.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    val powerChunks = GameData.ALL_POWER_TEMPLATES.chunked(2)
+                                    for (row in powerChunks) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            for (power in row) {
+                                                val isChecked = allowedPowers.contains(power.type)
+
+                                                Row(
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .clip(RoundedCornerShape(8.dp))
+                                                        .clickable {
+                                                            onPowerToggle(power.type)
+                                                            SoundSynth.playClick()
+                                                        }
+                                                        .padding(vertical = 4.dp, horizontal = 4.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                        modifier = Modifier.weight(1f)
+                                                    ) {
+                                                        Text(
+                                                            text = power.emoji,
+                                                            fontSize = 15.sp
+                                                        )
+                                                        Text(
+                                                            text = power.name,
+                                                            color = Color.White,
+                                                            fontSize = 11.5.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            maxLines = 1,
+                                                            overflow = TextOverflow.Ellipsis
+                                                        )
+                                                    }
+
+                                                    // Purple Checkbox
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .clip(RoundedCornerShape(5.dp))
+                                                            .background(
+                                                                if (isChecked) Color(0xFF7C3AED) else Color(0xFF1E1B4B)
+                                                            )
+                                                            .border(
+                                                                width = 1.2.dp,
+                                                                color = if (isChecked) Color(0xFFC084FC) else Color(0xFF475569),
+                                                                shape = RoundedCornerShape(5.dp)
+                                                            ),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        if (isChecked) {
+                                                            Icon(
+                                                                Icons.Default.Check,
+                                                                contentDescription = "Checked",
+                                                                tint = Color.White,
+                                                                modifier = Modifier.size(14.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (row.size < 2) {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
                                         }
                                     }
                                 }

@@ -217,3 +217,105 @@ fun SnakeArenaPreviewCanvas(
     }
 }
 
+/**
+ * Pure Stadium Arena Background Thumbnail Preview (NO snake, NO food)
+ * Renders high-end checkered floor, 3D lighting, ambient cyber glow and sparkle stars.
+ */
+@Composable
+fun BackgroundThemeThumbnailCanvas(
+    bgCol1: Long,
+    bgCol2: Long,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+
+        val columns = 8
+        val cellWidth = w / columns
+        val rows = (h / cellWidth).toInt() + 2
+
+        val col1 = Color(bgCol1)
+        val col2 = Color(bgCol2)
+
+        for (x in 0 until columns) {
+            for (y in 0 until rows) {
+                val tileColor = if ((x + y) % 2 == 0) col1 else col2
+                drawRect(
+                    color = tileColor,
+                    topLeft = Offset(x * cellWidth, y * cellWidth),
+                    size = Size(cellWidth, cellWidth)
+                )
+                if ((x + y) % 2 == 0) {
+                    drawCircle(
+                        color = Color.White.copy(alpha = 0.09f),
+                        radius = cellWidth * 0.09f,
+                        center = Offset(x * cellWidth + cellWidth / 2f, y * cellWidth + cellWidth / 2f)
+                    )
+                }
+            }
+        }
+
+        // Cyber corner lines
+        for (i in 1..2) {
+            val offsetVal = i * (cellWidth * 1.6f)
+            drawLine(
+                color = Color.White.copy(alpha = 0.08f),
+                start = Offset(0f, offsetVal),
+                end = Offset(offsetVal, 0f),
+                strokeWidth = 1.5f
+            )
+            drawLine(
+                color = Color.White.copy(alpha = 0.08f),
+                start = Offset(w, h - offsetVal),
+                end = Offset(w - offsetVal, h),
+                strokeWidth = 1.5f
+            )
+        }
+
+        // Radial lighting & vignette
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.12f),
+                    Color.Transparent,
+                    Color(0x8A000000)
+                ),
+                center = Offset(w * 0.5f, h * 0.5f),
+                radius = w * 0.7f
+            ),
+            size = size
+        )
+
+        // Glowing border rim
+        drawRect(
+            brush = Brush.sweepGradient(
+                colors = listOf(
+                    col1.copy(alpha = 0.85f),
+                    col2.copy(alpha = 0.85f),
+                    col1.copy(alpha = 0.85f)
+                ),
+                center = Offset(w * 0.5f, h * 0.5f)
+            ),
+            topLeft = Offset.Zero,
+            size = size,
+            style = Stroke(width = 2.5f)
+        )
+
+        // Sparkle stars
+        val sparkles = listOf(
+            Triple(0.20f, 0.28f, "✨"),
+            Triple(0.78f, 0.72f, "⭐")
+        )
+        val sparklePaint = Paint().apply {
+            textSize = cellWidth * 0.65f
+            textAlign = Paint.Align.CENTER
+            isAntiAlias = true
+        }
+        sparkles.forEach { (sx, sy, icon) ->
+            val py = h * sy - (sparklePaint.fontMetrics.ascent + sparklePaint.fontMetrics.descent) / 2f
+            drawContext.canvas.nativeCanvas.drawText(icon, w * sx, py, sparklePaint)
+        }
+    }
+}
+

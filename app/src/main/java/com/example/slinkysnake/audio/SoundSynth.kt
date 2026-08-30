@@ -80,7 +80,7 @@ object SoundSynth {
     }
 
     fun playClick() {
-        play("click")
+        // Disabled as requested: completely silent on clicks/navigation
     }
 
     fun playCoin() {
