@@ -16,7 +16,7 @@ object GameData {
     val SNAKE_SKINS: List<Skin> = listOf(
         Skin(
             id = "slinky",
-            name = "Slinky Green 🐍",
+            name = "Slinky Green",
             primaryColor = 0xFF4ADE80,
             secondaryColor = 0xFF22C55E,
             eyeColor = 0xFFFFFFFF,
@@ -27,7 +27,7 @@ object GameData {
         ),
         Skin(
             id = "glam",
-            name = "Princess Peach 👑",
+            name = "Princess Peach",
             primaryColor = 0xFFF472B6,
             secondaryColor = 0xFFDB2777,
             eyeColor = 0xFFFFFFFF,
@@ -38,7 +38,7 @@ object GameData {
         ),
         Skin(
             id = "zippy",
-            name = "Cool Breeze 😎",
+            name = "Cool Breeze",
             primaryColor = 0xFF38BDF8,
             secondaryColor = 0xFF0284C7,
             eyeColor = 0xFFFACC15,
@@ -49,7 +49,7 @@ object GameData {
         ),
         Skin(
             id = "ninja",
-            name = "Shadow Ninja 🥷",
+            name = "Shadow Ninja",
             primaryColor = 0xFF475569,
             secondaryColor = 0xFF1E293B,
             eyeColor = 0xFFEF4444,
@@ -60,7 +60,7 @@ object GameData {
         ),
         Skin(
             id = "mustache",
-            name = "Sir Reginald 🧔",
+            name = "Sir Reginald",
             primaryColor = 0xFFF97316,
             secondaryColor = 0xFFC2410C,
             eyeColor = 0xFFFFFFFF,
@@ -71,7 +71,7 @@ object GameData {
         ),
         Skin(
             id = "candy",
-            name = "Candy Gent 🍬",
+            name = "Candy Gent",
             primaryColor = 0xFFEC4899,
             secondaryColor = 0xFFFFFFFF,
             eyeColor = 0xFFFFFFFF,
@@ -82,7 +82,7 @@ object GameData {
         ),
         Skin(
             id = "angry_viper",
-            name = "Angry Viper 😡",
+            name = "Angry Viper",
             primaryColor = 0xFFDC2626,
             secondaryColor = 0xFF7F1D1D,
             eyeColor = 0xFFFBBF24,
@@ -93,7 +93,7 @@ object GameData {
         ),
         Skin(
             id = "goofy_charlie",
-            name = "Goofy Charlie 🤪",
+            name = "Goofy Charlie",
             primaryColor = 0xFFFBBF24,
             secondaryColor = 0xFFD97706,
             eyeColor = 0xFFFFFFFF,
@@ -104,7 +104,7 @@ object GameData {
         ),
         Skin(
             id = "poison",
-            name = "Neon Poison 🧪",
+            name = "Neon Poison",
             primaryColor = 0xFF10B981,
             secondaryColor = 0xFF8B5CF6,
             eyeColor = 0xFFFACC15,
@@ -115,7 +115,7 @@ object GameData {
         ),
         Skin(
             id = "retro",
-            name = "Retro Player 🎮",
+            name = "Retro Player",
             primaryColor = 0xFF059669,
             secondaryColor = 0xFF1E293B,
             eyeColor = 0xFFFFFFFF,
@@ -126,7 +126,7 @@ object GameData {
         ),
         Skin(
             id = "toxic_shroom",
-            name = "Mad Scientist 🧪",
+            name = "Mad Scientist",
             primaryColor = 0xFFA855F7,
             secondaryColor = 0xFF10B981,
             eyeColor = 0xFFF43F5E,
@@ -137,7 +137,7 @@ object GameData {
         ),
         Skin(
             id = "cosmic",
-            name = "Cosmic Star 🌟",
+            name = "Cosmic Star",
             primaryColor = 0xFFA855F7,
             secondaryColor = 0xFF3B82F6,
             eyeColor = 0xFFFFFFFF,
@@ -148,7 +148,7 @@ object GameData {
         ),
         Skin(
             id = "ruby",
-            name = "Ruby Crimson 🧣",
+            name = "Ruby Crimson",
             primaryColor = 0xFFDC2626,
             secondaryColor = 0xFFF43F5E,
             eyeColor = 0xFFFFFFFF,
@@ -159,7 +159,7 @@ object GameData {
         ),
         Skin(
             id = "phantom",
-            name = "Midnight Ghost 🕶️",
+            name = "Midnight Ghost",
             primaryColor = 0xFF1E1B4B,
             secondaryColor = 0xFF6366F1,
             eyeColor = 0xFF60A5FA,
@@ -170,7 +170,7 @@ object GameData {
         ),
         Skin(
             id = "royal_sir",
-            name = "Sir Emperor 🎩",
+            name = "Sir Emperor",
             primaryColor = 0xFF1E3A8A,
             secondaryColor = 0xFFFACC15,
             eyeColor = 0xFFFFFFFF,
@@ -181,7 +181,7 @@ object GameData {
         ),
         Skin(
             id = "dragon",
-            name = "Golden Dragon 🐉",
+            name = "Golden Dragon",
             primaryColor = 0xFFF59E0B,
             secondaryColor = 0xFFEF4444,
             eyeColor = 0xFFEF4444,
@@ -192,7 +192,7 @@ object GameData {
         ),
         Skin(
             id = "fire",
-            name = "Ghostfire Rider 🔥",
+            name = "Ghostfire Rider",
             primaryColor = 0xFFF97316,
             secondaryColor = 0xFFEF4444,
             eyeColor = 0xFFFBBF24,
@@ -203,7 +203,7 @@ object GameData {
         ),
         Skin(
             id = "ice",
-            name = "Glacier Frostbite ❄️",
+            name = "Glacier Frostbite",
             primaryColor = 0xFF38BDF8,
             secondaryColor = 0xFF0284C7,
             eyeColor = 0xFFE0F2FE,
@@ -531,7 +531,7 @@ object GameData {
         FoodTemplate("BANANA", "🍌", "Sweet Banana", 0xFFFBBF24, 12, 10, FoodCategory.FRESH_FRUIT, "Sweet tropical banana snack."),
         FoodTemplate("COCONUT", "🥥", "Hard Coconut", 0xFF854D0E, 20, 8, FoodCategory.FRESH_FRUIT, "Hard nut crunch with wooden splinter particles."),
         FoodTemplate("PINEAPPLE", "🍍", "Pineapple", 0xFFEAB308, 18, 8, FoodCategory.FRESH_FRUIT, "Tropical sweetness that brings huge satisfaction."),
-        FoodTemplate("DRAGON_FRUIT", "🐉", "Dragon Fruit", 0xFFEC4899, 50, 5, FoodCategory.FRESH_FRUIT, "Mystical burst with purple and pink star sprinkles!"),
+        FoodTemplate("DRAGON_FRUIT", "🌸", "Dragon Fruit", 0xFFEC4899, 50, 5, FoodCategory.FRESH_FRUIT, "Sweet tropical Pitaya bursting with pink star sprinkles!"),
         FoodTemplate("MEAT", "🍖", "Juicy Meat", 0xFFB45309, 35, 8, FoodCategory.SAVORY_MEAL, "Hearty meat snack packed with gaming energy."),
         FoodTemplate("MANGO", "🥭", "Sweet Mango", 0xFFF59E0B, 22, 9, FoodCategory.FRESH_FRUIT, "Rich sweet golden mango treat."),
         FoodTemplate("PIZZA", "🍕", "Cheesy Pizza", 0xFFEF4444, 45, 6, FoodCategory.SAVORY_MEAL, "Mouth-watering slice loaded with mozzarella."),
@@ -586,6 +586,7 @@ object GameData {
         FoodTemplate("BOOSTER", "🧪", "Magic Elixir", 0xFF3B82F6, 30, 10, FoodCategory.POWER_UP, "BLUE POTION! Speed surge with glowing blue magical sparkles for 10s!"),
         FoodTemplate("GOLDEN_STAR", "⭐", "Golden Star", 0xFFFACC15, 35, 10, FoodCategory.POWER_UP, "STAR BLAST! Mega points explosion with glittering golden star burst!"),
         FoodTemplate("POWER_FREEZE", "❄️", "Frost Chill", 0xFF06B6D4, 30, 10, FoodCategory.POWER_UP, "FROST CHILL! Slows down movement speed into chill motion for effortless precision!"),
-        FoodTemplate("POWER_SHIELD", "🛡️", "Safe Shield", 0xFFEAB308, 30, 10, FoodCategory.POWER_UP, "SAFE SHIELD! Protects you from 1 fatal crash or obstacle collision!")
+        FoodTemplate("POWER_SHIELD", "🛡️", "Safe Shield", 0xFFEAB308, 30, 10, FoodCategory.POWER_UP, "SAFE SHIELD! Protects you from 1 fatal crash or obstacle collision!"),
+        FoodTemplate("POWER_DRAGON", "🐉", "Dragon Beast", 0xFFF59E0B, 50, 10, FoodCategory.POWER_UP, "DRAGON BEAST! Transforms into an invincible blazing dragon with fiery aura & double points for 12s!")
     )
 }

@@ -84,15 +84,15 @@ object SoundSynth {
     }
 
     fun playCoin() {
-        play("coin")
+        // Disabled: only food eating sound enabled
     }
 
     fun playSell() {
-        play("sell")
+        // Disabled: only food eating sound enabled
     }
 
     fun playPurchase() {
-        play("purchase")
+        // Disabled: only food eating sound enabled
     }
 
     fun playEat(type: String = "APPLE", combo: Int = 0) {
@@ -108,15 +108,15 @@ object SoundSynth {
     }
 
     fun playCrash() {
-        play("crash")
+        // Disabled: out/crash sound removed as requested
     }
 
     fun playLevelUp() {
-        play("levelup")
+        // Disabled: only food eating sound enabled
     }
 
     fun playCountdownBeep(isGo: Boolean) {
-        if (isGo) play("beep_high") else play("beep_low")
+        // Disabled: only food eating sound enabled
     }
 
     fun playAchievement() {

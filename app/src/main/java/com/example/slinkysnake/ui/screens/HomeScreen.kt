@@ -161,7 +161,7 @@ fun HomeScreen(
                     )
                 }
 
-                // Right Golden Coins Balance Chip 🪙
+                // Right Golden Coins Balance Chip 🪙 (Clicking opens Sell Food / Market screen)
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -170,8 +170,7 @@ fun HomeScreen(
                         .background(Color(0xFF1E293B))
                         .border(1.5.dp, Color(0xFFF59E0B), RoundedCornerShape(8.dp))
                         .clickable {
-                            SoundSynth.playCoin()
-                            onOpenSkins()
+                            onOpenMarket()
                         }
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                         .testTag("home_coins_chip"),
@@ -218,78 +217,7 @@ fun HomeScreen(
                 )
             }
 
-            // 3. STATS BAR (High Score, Best World, Total Fruits Eaten)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF0F172A))
-                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
-                    .padding(vertical = 8.dp, horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🏆 HIGH SCORE",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF94A3B8)
-                    )
-                    Text(
-                        text = "${uiState.highScore}",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFFFBBF24)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(26.dp)
-                        .background(Color(0xFF334155))
-                )
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🌟 BEST WORLD",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF94A3B8)
-                    )
-                    Text(
-                        text = "Level ${uiState.unlockedLevel}",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFFA855F7)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(26.dp)
-                        .background(Color(0xFF334155))
-                )
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "🍎 FOOD EATEN",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF94A3B8)
-                    )
-                    Text(
-                        text = "${uiState.foodEatenCount}",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color(0xFF34D399)
-                    )
-                }
-            }
-
-            // 4. GAME MODE SELECTOR (Classic Mode vs Levels Mode)
+            // 3. GAME MODE SELECTOR (Classic Mode vs Levels Mode)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -563,7 +491,7 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(3.dp)
                         ) {
                             Text(
-                                text = "Your Skin: ${uiState.selectedSkin.name} 🧔",
+                                text = "Your Skin: ${uiState.selectedSkin.name}",
                                 color = Color(0xFFF59E0B),
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Black
@@ -571,7 +499,7 @@ fun HomeScreen(
 
                             if (uiState.gameMode == GameMode.LEVELS) {
                                 Text(
-                                    text = "Level Mode: Level ${currentLevel.level} – ${currentLevel.theme.name} 🏡\nTarget score: ${currentLevel.targetScore} points.",
+                                    text = "Level Mode: Level ${currentLevel.level} – ${currentLevel.theme.name}\nTarget score: ${currentLevel.targetScore} points.",
                                     color = Color(0xFF94A3B8),
                                     fontSize = 11.5.sp,
                                     textAlign = TextAlign.Center,
@@ -670,7 +598,7 @@ private fun ChooseSnakeHeroSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "🎭 Choose Your Snake Hero! 🎭",
+                    text = "🐍 Choose Your Snake Hero",
                     color = Color(0xFFF59E0B),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black
@@ -774,7 +702,7 @@ private fun ChooseBackgroundThemeSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "🖼️ Choose Arena Background! 🖼️",
+                    text = "🖼️ Choose Arena Background",
                     color = Color(0xFF22D3EE),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black

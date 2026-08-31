@@ -277,8 +277,8 @@ fun FoodAndPowersGuideDialog(
                                 item {
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFF1A162B),
-                                        border = BorderStroke(1.dp, Color(0xFFA855F7).copy(alpha = 0.6f)),
+                                        color = Color(0xFF0C192E),
+                                        border = BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.6f)),
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(top = 8.dp, bottom = 2.dp)
@@ -290,17 +290,17 @@ fun FoodAndPowersGuideDialog(
                                         ) {
                                             Text(
                                                 text = "⚡ SUPER POWERS (${allPowers.size} Available)",
-                                                color = Color(0xFFC084FC),
+                                                color = Color(0xFF38BDF8),
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Black
                                             )
                                             Surface(
                                                 shape = RoundedCornerShape(4.dp),
-                                                color = Color(0xFF065F46)
+                                                color = Color(0xFF0369A1)
                                             ) {
                                                 Text(
                                                     text = "${uiState.allowedPowers.size}/${allPowers.size} ACTIVE (10s)",
-                                                    color = Color(0xFF34D399),
+                                                    color = Color(0xFFE0F2FE),
                                                     fontSize = 9.sp,
                                                     fontWeight = FontWeight.Black,
                                                     modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
@@ -327,25 +327,14 @@ private fun FoodGuideCard(
     food: FoodTemplate,
     isPower: Boolean = false
 ) {
-    val categoryLabel = if (isPower) {
-        "POWER-UP ⚡"
-    } else {
-        when (food.category) {
-            FoodCategory.FRESH_FRUIT -> "FRESH FRUIT 🍎"
-            FoodCategory.POWER_UP -> "POWER-UP ⚡"
-            FoodCategory.SAVORY_MEAL -> "SAVORY MEAL 🍕"
-            FoodCategory.SWEET_TREAT -> "SWEET TREAT 🍰"
-        }
-    }
-
     val foodColor = Color(food.color)
 
     Surface(
         shape = RoundedCornerShape(10.dp),
-        color = if (isPower) Color(0xFF17182E) else Color(0xFF111D30),
+        color = if (isPower) Color(0xFF0C192E) else Color(0xFF111D30),
         border = BorderStroke(
             1.dp,
-            if (isPower) Color(0xFF7C3AED).copy(alpha = 0.5f) else Color(0xFF1E3A5F)
+            if (isPower) Color(0xFF38BDF8).copy(alpha = 0.5f) else Color(0xFF1E3A5F)
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -381,47 +370,24 @@ private fun FoodGuideCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.weight(1f, fill = false)
-                    ) {
-                        Text(
-                            text = food.name,
-                            color = Color.White,
-                            fontSize = 13.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = if (isPower) Color(0xFF3B0764) else Color(0xFF0F172A),
-                            border = BorderStroke(
-                                1.dp,
-                                if (isPower) Color(0xFFA855F7) else Color(0xFF334155)
-                            )
-                        ) {
-                            Text(
-                                text = categoryLabel,
-                                color = if (isPower) Color(0xFFE9D5FF) else Color(0xFF94A3B8),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
+                    Text(
+                        text = food.name,
+                        color = Color.White,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = if (isPower) Color(0xFF064E3B) else Color(0xFF0C1E38),
+                        color = if (isPower) Color(0xFF0284C7).copy(alpha = 0.25f) else Color(0xFF0C1E38),
                         border = BorderStroke(
                             1.dp,
-                            if (isPower) Color(0xFF10B981) else Color(0xFF0284C7).copy(alpha = 0.7f)
+                            if (isPower) Color(0xFF38BDF8) else Color(0xFF0284C7).copy(alpha = 0.7f)
                         )
                     ) {
                         Text(
-                            text = if (isPower) "✓ EQUIPPED" else "+${food.points} pts",
-                            color = if (isPower) Color(0xFF6EE7B7) else Color(0xFF38BDF8),
+                            text = if (isPower) "⚡ EQUIPPED" else "+${food.points} pts",
+                            color = if (isPower) Color(0xFF38BDF8) else Color(0xFF38BDF8),
                             fontSize = if (isPower) 9.5.sp else 11.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)

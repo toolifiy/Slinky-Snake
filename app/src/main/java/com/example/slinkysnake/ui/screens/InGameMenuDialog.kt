@@ -193,8 +193,8 @@ fun InGameMenuDialog(
                                 valueRange = 0.5f..5.0f,
                                 steps = 8,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = Color(0xFF8B5CF6),
-                                    activeTrackColor = Color(0xFF8B5CF6),
+                                    thumbColor = Color(0xFF38BDF8),
+                                    activeTrackColor = Color(0xFF38BDF8),
                                     inactiveTrackColor = Color(0xFF1E293B)
                                 ),
                                 modifier = Modifier.fillMaxWidth()
@@ -478,17 +478,17 @@ fun InGameMenuDialog(
                             ) {
                                 Text(
                                     text = "⚡ ALLOWED SUPER POWERS",
-                                    color = Color(0xFFC084FC),
+                                    color = Color(0xFF38BDF8),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black
                                 )
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = Color(0xFF065F46)
+                                    color = Color(0xFF0369A1)
                                 ) {
                                     Text(
                                         text = "${allowedPowers.size}/${GameData.ALL_POWER_TEMPLATES.size} ACTIVE",
-                                        color = Color(0xFF34D399),
+                                        color = Color(0xFFE0F2FE),
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Black,
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
@@ -500,8 +500,8 @@ fun InGameMenuDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF14132B))
-                                    .border(1.dp, Color(0xFF7C3AED).copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF0C192E))
+                                    .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.6f), RoundedCornerShape(12.dp))
                                     .padding(8.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -545,17 +545,17 @@ fun InGameMenuDialog(
                                                         )
                                                     }
 
-                                                    // Purple Checkbox
+                                                    // Light Blue Checkbox
                                                     Box(
                                                         modifier = Modifier
                                                             .size(20.dp)
                                                             .clip(RoundedCornerShape(5.dp))
                                                             .background(
-                                                                if (isChecked) Color(0xFF7C3AED) else Color(0xFF1E1B4B)
+                                                                if (isChecked) Color(0xFF0284C7) else Color(0xFF0F172A)
                                                             )
                                                             .border(
                                                                 width = 1.2.dp,
-                                                                color = if (isChecked) Color(0xFFC084FC) else Color(0xFF475569),
+                                                                color = if (isChecked) Color(0xFF38BDF8) else Color(0xFF475569),
                                                                 shape = RoundedCornerShape(5.dp)
                                                             ),
                                                         contentAlignment = Alignment.Center

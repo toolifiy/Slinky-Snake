@@ -383,44 +383,14 @@ fun SettingsScreen(
                             valueRange = 0.5f..5.0f,
                             steps = 8,
                             colors = SliderDefaults.colors(
-                                thumbColor = Color(0xFF8B5CF6),
-                                activeTrackColor = Color(0xFF8B5CF6),
+                                thumbColor = Color(0xFF38BDF8),
+                                activeTrackColor = Color(0xFF38BDF8),
                                 inactiveTrackColor = Color(0xFF1E293B)
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("speed_slider")
                         )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "SLOW 🐌 (0.5x)",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF94A3B8)
-                            )
-                            Text(
-                                text = "NORMAL 🐍 (1.0x)",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF94A3B8)
-                            )
-                            Text(
-                                text = "SUPER ⚡ (2.5x)",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF94A3B8)
-                            )
-                            Text(
-                                text = "HYPER 🚀 (5.0x)",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC084FC)
-                            )
-                        }
                     }
                 }
             }
@@ -527,8 +497,8 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF14132B)),
-                    border = BorderStroke(1.5.dp, Color(0xFF7C3AED).copy(alpha = 0.6f))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0C192E)),
+                    border = BorderStroke(1.5.dp, Color(0xFF38BDF8).copy(alpha = 0.6f))
                 ) {
                     Column(
                         modifier = Modifier
@@ -543,17 +513,17 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = "⚡ ALLOWED SUPER POWERS",
-                                color = Color(0xFFC084FC),
+                                color = Color(0xFF38BDF8),
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Black
                             )
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
-                                color = Color(0xFF065F46)
+                                color = Color(0xFF0369A1)
                             ) {
                                 Text(
                                     text = "${uiState.allowedPowers.size}/${GameData.ALL_POWER_TEMPLATES.size} ACTIVE",
-                                    color = Color(0xFF34D399),
+                                    color = Color(0xFFE0F2FE),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Black,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -574,8 +544,8 @@ fun SettingsScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isChecked) Color(0xFF2E1065) else Color(0xFF0F0E1E))
-                                            .border(1.dp, if (isChecked) Color(0xFFA855F7) else Color(0xFF1E1B4B), RoundedCornerShape(8.dp))
+                                            .background(if (isChecked) Color(0xFF0284C7).copy(alpha = 0.2f) else Color(0xFF0F172A))
+                                            .border(1.dp, if (isChecked) Color(0xFF38BDF8) else Color(0xFF1E293B), RoundedCornerShape(8.dp))
                                             .clickable {
                                                 viewModel.togglePower(power.type)
                                                 SoundSynth.playClick()
@@ -608,11 +578,11 @@ fun SettingsScreen(
                                                 .size(20.dp)
                                                 .clip(RoundedCornerShape(4.dp))
                                                 .background(
-                                                    if (isChecked) Color(0xFF7C3AED) else Color(0xFF1E1B4B)
+                                                    if (isChecked) Color(0xFF0284C7) else Color(0xFF0F172A)
                                                 )
                                                 .border(
                                                     width = 1.5.dp,
-                                                    color = if (isChecked) Color(0xFFC084FC) else Color(0xFF475569),
+                                                    color = if (isChecked) Color(0xFF38BDF8) else Color(0xFF475569),
                                                     shape = RoundedCornerShape(4.dp)
                                                 ),
                                             contentAlignment = Alignment.Center

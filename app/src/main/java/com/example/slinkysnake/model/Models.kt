@@ -137,7 +137,8 @@ data class ActiveEffects(
     val magnet: Long = 0L,
     val chiliCrying: Long = 0L,
     val freeze: Long = 0L,
-    val shield: Boolean = false
+    val shield: Boolean = false,
+    val dragon: Long = 0L
 )
 
 data class DailyMission(

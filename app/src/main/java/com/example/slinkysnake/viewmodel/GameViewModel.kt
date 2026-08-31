@@ -402,14 +402,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private var powerSpawnCounter = (3..6).random()
+    private var foodsSinceLastPower = 0
 
     fun startGame() {
         SoundSynth.playClick()
         val initialSnake = listOf(Position(10, 8), Position(10, 9), Position(10, 10))
         nextDirection = Direction.UP
         directionQueue.clear()
-        powerSpawnCounter = (3..6).random()
+        foodsSinceLastPower = 0
 
         val currentLevelConfig = GameData.LEVEL_CONFIGS[_uiState.value.currentLevelIdx]
         val activeObstacles = if (_uiState.value.gameMode == GameMode.CLASSIC) emptyList() else currentLevelConfig.obstacles
@@ -549,7 +549,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         speed = (speed - foodSpeedAdj.coerceAtMost(40L)).coerceAtLeast(140L)
 
         // Active modifiers
-        if (state.activeEffects.chili > 0L) {
+        if (state.activeEffects.dragon > 0L) {
+            speed = (speed * 0.80f).toLong()
+        } else if (state.activeEffects.chili > 0L) {
             speed = (speed * 0.82f).toLong()
         } else if (state.activeEffects.grape > 0L || state.activeEffects.freeze > 0L) {
             speed = (speed * 1.5f).toLong()
@@ -582,7 +584,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             Direction.RIGHT -> Position(head.x + 1, head.y)
         }
 
-        val isImmortal = state.activeEffects.immortal > 0L
+        val isImmortal = state.activeEffects.immortal > 0L || state.activeEffects.dragon > 0L
         val hasShield = state.activeEffects.shield
 
         // 1. Wall Collision Check
@@ -714,9 +716,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         prefs.incrementDailyMissionProgress("eat_food", 1)
         prefs.setDailyMissionProgress("high_score", nextScore)
 
-        val coinsEarned = if (food.points >= 25 || multiplier > 1) 2 else 1
-        val updatedCoins = prefs.addCoins(coinsEarned)
-
         // Level Complete check
         if (state.gameMode == GameMode.LEVELS) {
             val levelConfig = GameData.LEVEL_CONFIGS[state.currentLevelIdx]
@@ -724,12 +723,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 SoundSynth.playLevelUp()
                 val nextLevel = levelConfig.level + 1
                 prefs.setUnlockedLevel(nextLevel)
-                val levelBonusCoins = prefs.addCoins(25) // +25 bonus coins for level clear!
 
                 if (state.currentLevelIdx >= GameData.LEVEL_CONFIGS.size - 1) {
-                    _uiState.update { it.copy(showVictory = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel(), coins = levelBonusCoins) }
+                    _uiState.update { it.copy(showVictory = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel()) }
                 } else {
-                    _uiState.update { it.copy(showLevelClear = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel(), coins = levelBonusCoins) }
+                    _uiState.update { it.copy(showLevelClear = true, isPlaying = false, unlockedLevel = prefs.getUnlockedLevel()) }
                 }
                 unlockAchievementDirect("level_clear")
                 if (levelConfig.level == 3) unlockAchievementDirect("level_3_master")
@@ -743,14 +741,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val nextFood = spawnFood(newSnake, obstacles)
         val updatedFoodStock = prefs.addFoodStock(food.type, 1)
 
-        // Check random power-up spawn alongside food
+        // 4th Food Power Spawn: exactly 3 foods gap between powers, on 4th food spawn power up
         var nextPowerUp = state.powerUp
-        if (nextPowerUp == null) {
-            powerSpawnCounter--
-            if (powerSpawnCounter <= 0) {
-                powerSpawnCounter = (4..7).random()
-                nextPowerUp = spawnPowerUp(newSnake, obstacles, nextFood.position)
-            }
+        foodsSinceLastPower++
+        if (nextPowerUp == null && foodsSinceLastPower >= 4) {
+            nextPowerUp = spawnPowerUp(newSnake, obstacles, nextFood.position)
+            foodsSinceLastPower = 0
         }
 
         createExplosion(food.position.x, food.position.y, food.color, 12)
@@ -765,7 +761,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 direction = nextDirection,
                 score = nextScore,
                 highScore = nextScore.coerceAtLeast(state.highScore),
-                coins = updatedCoins,
+                coins = prefs.getCoins(),
                 comboMultiplier = multiplier,
                 comboCount = nextCombo,
                 foodEatenCount = nextEaten,
@@ -791,6 +787,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val earned = power.points
 
         when (power.type) {
+            "POWER_DRAGON" -> {
+                newEffects = newEffects.copy(
+                    dragon = 12000L,
+                    immortal = 12000L,
+                    doublePoints = 12000L,
+                    magnet = 12000L,
+                    chili = 12000L,
+                    booster = 12000L,
+                    freeze = 0L,
+                    shield = true
+                )
+                boosterCount += 1
+                newBannerMsg = "🐉 DRAGON BEAST: ALL POWERS ACTIVATED (12s)!"
+                unlockAchievementDirect("immortal_ghost")
+                unlockAchievementDirect("double_deal")
+                unlockAchievementDirect("magnet_pull")
+                unlockAchievementDirect("perfect_reflexes")
+                addFloatingText("ALL POWERS DRAGON! 🐉", power.position.x, power.position.y, 0xFFF59E0B)
+                triggerScreenShake(12f)
+            }
             "POWER_SPEED" -> {
                 newEffects = newEffects.copy(chili = 10000L)
                 newBannerMsg = "⚡ Hyper Speed Boost (10s)!"
@@ -848,7 +864,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         prefs.incrementDailyMissionProgress("power_surge", 1)
-        val updatedCoins = prefs.addCoins(2)
         val nextScore = state.score + earned
 
         createExplosion(power.position.x, power.position.y, power.color, 16)
@@ -860,7 +875,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 direction = nextDirection,
                 score = nextScore,
                 highScore = nextScore.coerceAtLeast(state.highScore),
-                coins = updatedCoins,
+                coins = prefs.getCoins(),
                 powerUp = null,
                 boosterEatenCount = boosterCount,
                 bannerMessage = newBannerMsg ?: it.bannerMessage,
@@ -875,13 +890,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         SoundSynth.playCrash()
         triggerScreenShake(12f)
         val state = _uiState.value
-        val gameBonusCoins = if (state.score > 0) (state.score / 10).coerceAtLeast(1) else 0
-        val currentCoins = if (gameBonusCoins > 0) prefs.addCoins(gameBonusCoins) else state.coins
         _uiState.update {
             it.copy(
                 isPlaying = false,
                 showGameOver = true,
-                coins = currentCoins,
+                coins = prefs.getCoins(),
                 dailyMissions = loadDailyMissions()
             )
         }
@@ -1049,7 +1062,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 doublePoints = (state.activeEffects.doublePoints - dt).coerceAtLeast(0L),
                 magnet = (state.activeEffects.magnet - dt).coerceAtLeast(0L),
                 chiliCrying = (state.activeEffects.chiliCrying - dt).coerceAtLeast(0L),
-                freeze = (state.activeEffects.freeze - dt).coerceAtLeast(0L)
+                freeze = (state.activeEffects.freeze - dt).coerceAtLeast(0L),
+                dragon = (state.activeEffects.dragon - dt).coerceAtLeast(0L)
             )
 
             // Screen shake decay

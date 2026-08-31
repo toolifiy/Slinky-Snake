@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import com.example.slinkysnake.model.Accessory
 import com.example.slinkysnake.model.ActiveEffects
 import com.example.slinkysnake.model.Direction
 import com.example.slinkysnake.model.FloatingText
@@ -215,10 +216,22 @@ fun GameBoardCanvas(
 
             // 4. Draw Snake (Clean Block-by-Block Movement with Arcade Polishing)
             if (snake.isNotEmpty()) {
-                val primaryColor = Color(selectedSkin.primaryColor)
-                val secondaryColor = Color(selectedSkin.secondaryColor)
-                val isImmortal = activeEffects.immortal > 0L
-                val currentAlpha = if (isImmortal) 0.75f else 1.0f
+                val isDragon = activeEffects.dragon > 0L
+                val effectiveSkin = if (isDragon) {
+                    selectedSkin.copy(
+                        primaryColor = 0xFFF97316,
+                        secondaryColor = 0xFFDC2626,
+                        eyeColor = 0xFFFDE047,
+                        pattern = Pattern.GLOW
+                    )
+                } else {
+                    selectedSkin
+                }
+
+                val primaryColor = Color(effectiveSkin.primaryColor)
+                val secondaryColor = Color(effectiveSkin.secondaryColor)
+                val isImmortal = activeEffects.immortal > 0L || isDragon
+                val currentAlpha = if (isImmortal && !isDragon) 0.75f else 1.0f
 
                 val segmentPositions = mutableListOf<Offset>()
                 val segmentRadii = mutableListOf<Float>()
@@ -230,12 +243,24 @@ fun GameBoardCanvas(
                     val posY = currentPos.y * cellWidth + cellWidth / 2f + shakeY
                     val defaultRadius = (cellWidth * 0.42f)
                     val radius = when {
-                        i == totalSegments - 1 && totalSegments >= 3 -> defaultRadius * 0.75f // Tip of tail (increased from 0.55f, slightly smaller than 2nd-last)
+                        i == totalSegments - 1 && totalSegments >= 3 -> defaultRadius * 0.75f // Tip of tail
                         i == totalSegments - 2 && totalSegments >= 4 -> defaultRadius * 0.88f // 2nd to last ball
                         else -> defaultRadius
                     }
                     segmentPositions.add(Offset(posX, posY))
                     segmentRadii.add(radius)
+                }
+
+                // Fiery Dragon Aura Glow
+                if (isDragon) {
+                    val pulse = (sin(time / 80.0).toFloat() * 3f)
+                    for (pos in segmentPositions) {
+                        drawCircle(
+                            color = Color(0x60F59E0B),
+                            radius = (cellWidth * 0.52f) + pulse,
+                            center = pos
+                        )
+                    }
                 }
 
                 // A. Drop shadows under segments
@@ -282,7 +307,7 @@ fun GameBoardCanvas(
 
                     // Subtle outline
                     drawCircle(
-                        color = Color(0xFF991B1B).copy(alpha = 0.6f * currentAlpha),
+                        color = if (isDragon) Color(0xFFEA580C) else Color(0xFF991B1B).copy(alpha = 0.6f * currentAlpha),
                         radius = r,
                         center = pos,
                         style = Stroke(width = 1.5f)
@@ -302,7 +327,7 @@ fun GameBoardCanvas(
 
                 rotate(degrees = headAngle, pivot = headPos) {
                     drawRenderedSnakeHead(
-                        skin = selectedSkin,
+                        skin = effectiveSkin,
                         centerX = headPos.x,
                         centerY = headPos.y,
                         headRadius = headRadius,
