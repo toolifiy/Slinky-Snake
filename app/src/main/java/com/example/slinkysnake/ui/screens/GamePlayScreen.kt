@@ -82,7 +82,6 @@ fun GamePlayScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var showMenuDialog by remember { mutableStateOf(false) }
 
-    // Outer Navy Background (#131C2E) with Golden Outer Frame (#F59E0B)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFF131C2E),
@@ -99,23 +98,96 @@ fun GamePlayScreen(
                 .arcadeSwipeController(uiState.direction) { dir -> viewModel.onDirectionInput(dir) }
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = statusBarPadding,
-                        bottom = navBarPadding + 4.dp
-                    ),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.Top
             ) {
-                // 1. TOP GAME BOARD AREA
+                // 1. TOP COMPACT BLACK HEADER BAR (Spans full width, hugs top)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF000000))
+                        .padding(
+                            top = statusBarPadding + 2.dp,
+                            bottom = 4.dp,
+                            start = 14.dp,
+                            end = 14.dp
+                        )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(38.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Left: Notice in Orange (when food eaten / power up activated) or game indicator
+                        if (uiState.bannerMessage != null) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFEA580C).copy(alpha = 0.25f),
+                                border = BorderStroke(1.dp, Color(0xFFF97316)),
+                                modifier = Modifier.testTag("game_status_sign_bar")
+                            ) {
+                                Text(
+                                    text = uiState.bannerMessage ?: "",
+                                    color = Color(0xFFFB923C), // Vibrant Orange
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    maxLines = 1
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = if (uiState.gameMode == GameMode.LEVELS) "LEVEL ${currentLevel.level}" else "CLASSIC ARENA",
+                                color = Color(0xFFFB923C), // Sleek Orange
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+
+                        // Right: MENU Button (Clean Yellow / Amber Capsule)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFF59E0B))
+                                .clickable {
+                                    viewModel.pauseGame()
+                                    showMenuDialog = true
+                                }
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                                .testTag("game_menu_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "⚙️",
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "MENU",
+                                    color = Color(0xFF0F172A),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 2. MAIN GAMEPLAY BOX (Directly attached below Top Header Bar)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clipToBounds()
-                        .border(width = 3.dp, color = Color(0xFF0F172A))
+                        .border(width = 2.dp, color = Color(0xFF0F172A))
                 ) {
-                    // Checkered Game Board
                     GameBoardCanvas(
                         snake = uiState.snake,
                         prevSnake = uiState.prevSnake,
@@ -138,7 +210,7 @@ fun GamePlayScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // On-Board Pause Overlay (When paused without menu or exit dialog)
+                    // On-Board Pause Overlay
                     if (uiState.isPaused && !showMenuDialog && !showExitDialog && uiState.countdown == null) {
                         Box(
                             modifier = Modifier
@@ -210,12 +282,12 @@ fun GamePlayScreen(
                     }
                 }
 
-                // 2. SCORE & STATUS BAR (Score on Left, Highscore / Subtle 2-Sec Status Bar on Right)
+                // 3. SCORE & HIGHSCORE BAR (Directly aligned right beneath Game Board Box)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color(0xFF0A0F1D))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -230,109 +302,35 @@ fun GamePlayScreen(
                         )
                         Text(
                             text = "${uiState.score} PTS",
-                            color = Color(0xFFA855F7), // Vibrant Purple
+                            color = Color(0xFFA855F7),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
                         )
                     }
 
-                    // Right: Subtle Status Sign Bar (for 2s when active) OR HIGHSCORE
-                    if (uiState.bannerMessage != null) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFF1E293B),
-                            border = BorderStroke(1.dp, Color(0xFF475569)),
-                            modifier = Modifier.testTag("game_status_sign_bar")
-                        ) {
-                            Text(
-                                text = uiState.bannerMessage ?: "",
-                                color = Color(0xFFE2E8F0),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                maxLines = 1
-                            )
-                        }
-                    } else {
-                        // Default Right: HIGHSCORE: 1986 PTS
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "HIGHSCORE: ",
-                                color = Color(0xFF64748B),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
-                            Text(
-                                text = "${uiState.highScore} PTS",
-                                color = Color(0xFF10B981), // Vibrant Mint Green
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    }
-                }
-
-                // 3. ACTION BUTTONS ROW (🚪 EXIT & ⚙️ MENU)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // 🚪 EXIT Button (Red Rounded Capsule)
-                    Box(
-                        modifier = Modifier
-                            .shadow(6.dp, RoundedCornerShape(16.dp))
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFEF4444))
-                            .border(2.dp, Color(0xFFDC2626), RoundedCornerShape(16.dp))
-                            .clickable {
-                                viewModel.pauseGame()
-                                showExitDialog = true
-                            }
-                            .padding(horizontal = 18.dp, vertical = 9.dp)
-                            .testTag("game_exit_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    // Right: HIGHSCORE / LEVEL TARGET
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "🚪 EXIT",
-                            color = Color.White,
+                            text = if (uiState.gameMode == GameMode.LEVELS) "TARGET: " else "HIGHSCORE: ",
+                            color = Color(0xFF64748B),
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
+                            fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
-                    }
-
-                    // ⚙️ MENU Button (Yellow / Amber Rounded Capsule)
-                    Box(
-                        modifier = Modifier
-                            .shadow(6.dp, RoundedCornerShape(16.dp))
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFF59E0B))
-                            .border(2.dp, Color(0xFFD97706), RoundedCornerShape(16.dp))
-                            .clickable {
-                                viewModel.pauseGame()
-                                showMenuDialog = true
-                            }
-                            .padding(horizontal = 18.dp, vertical = 9.dp)
-                            .testTag("game_menu_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
                         Text(
-                            text = "⚙️ MENU",
-                            color = Color(0xFF0F172A),
-                            fontSize = 13.sp,
+                            text = if (uiState.gameMode == GameMode.LEVELS) "${currentLevel.targetScore} PTS" else "${uiState.highScore} PTS",
+                            color = Color(0xFF10B981),
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.sp
                         )
                     }
                 }
 
-                // 4. ARCADE CONTROLLER (D-PAD)
+                Spacer(modifier = Modifier.weight(1f))
+
+                // 4. ARCADE CONTROLLER (At bottom above nav bar)
                 ArcadeDpadControls(
                     currentDirection = uiState.direction,
                     onDirectionChange = { dir -> viewModel.onDirectionInput(dir) },
@@ -344,27 +342,25 @@ fun GamePlayScreen(
                         }
                     },
                     isPaused = uiState.isPaused,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    modifier = Modifier.padding(bottom = navBarPadding + 4.dp)
                 )
             }
 
-            // In-Game Arcade Menu Popup Dialog (ONLY when ⚙️ MENU is clicked)
+            // In-Game Arcade Menu Popup Dialog (Clean & Simple: Resume, Restart, Exit)
             if (showMenuDialog) {
                 InGameMenuDialog(
-                    currentThemeId = uiState.boardThemeId,
-                    speedMultiplier = uiState.speedMultiplier,
-                    isSoundEnabled = uiState.isSoundEnabled,
-                    soundVolume = uiState.soundVolume,
-                    allowedFruits = uiState.allowedFruits,
-                    allowedPowers = uiState.allowedPowers,
-                    selectedSkin = uiState.selectedSkin,
-                    onSelectTheme = { themeId -> viewModel.setBoardTheme(themeId) },
-                    onSpeedChange = { speed -> viewModel.setSpeedMultiplier(speed) },
-                    onSoundToggle = { enabled -> viewModel.setSoundEnabled(enabled) },
-                    onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
-                    onFruitToggle = { fruitType -> viewModel.toggleFruit(fruitType) },
-                    onPowerToggle = { powerType -> viewModel.togglePower(powerType) },
-                    onSelectSkin = { skin -> viewModel.selectSkin(skin) },
+                    onResume = {
+                        showMenuDialog = false
+                        viewModel.resumeWithCountdown()
+                    },
+                    onRestart = {
+                        showMenuDialog = false
+                        viewModel.startGame()
+                    },
+                    onExit = {
+                        showMenuDialog = false
+                        showExitDialog = true
+                    },
                     onDismiss = {
                         showMenuDialog = false
                         viewModel.resumeWithCountdown()
@@ -372,7 +368,7 @@ fun GamePlayScreen(
                 )
             }
 
-            // Exit Confirmation Popup Dialog (When 🚪 EXIT is clicked - Taller and Spacious)
+            // Exit Confirmation Popup Dialog
             if (showExitDialog) {
                 Dialog(
                     onDismissRequest = {
@@ -402,7 +398,6 @@ fun GamePlayScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(20.dp)
                             ) {
-                                // Big Glowing Door Badge
                                 Box(
                                     modifier = Modifier
                                         .size(68.dp)
@@ -437,7 +432,6 @@ fun GamePlayScreen(
                                     )
                                 }
 
-                                // Score & Coin Summary Pill
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
                                     color = Color(0xFF0F172A),
@@ -461,12 +455,10 @@ fun GamePlayScreen(
                                     }
                                 }
 
-                                // Action Buttons
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    // Exit Button
                                     Button(
                                         onClick = {
                                             showExitDialog = false
@@ -488,7 +480,6 @@ fun GamePlayScreen(
                                         )
                                     }
 
-                                    // Resume Button
                                     Button(
                                         onClick = {
                                             showExitDialog = false
@@ -544,7 +535,7 @@ fun GamePlayScreen(
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
                                     color = Color(0xFFF59E0B).copy(alpha = 0.2f),
-                                    border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFF59E0B))
+                                    border = BorderStroke(1.5.dp, Color(0xFFF59E0B))
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
