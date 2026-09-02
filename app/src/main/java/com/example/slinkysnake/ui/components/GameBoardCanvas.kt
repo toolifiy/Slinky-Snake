@@ -130,28 +130,20 @@ fun GameBoardCanvas(
                 }
             }
 
-            // 3. Draw Food (Croissant / Apple / Powerup inside green circular badge like screenshot)
+            // 3. Draw Realistic 3D Food with Organic Shading, Leaves, Stems, and Specular Lighting
             if (food != null) {
                 val fx = food.position.x * cellWidth + cellWidth / 2f + shakeX
                 val bobY = if (isPaused) 0f else sin(time / 140.0).toFloat() * (cellWidth * 0.03f)
                 val fy = food.position.y * cellWidth + cellWidth / 2f + shakeY + bobY
 
-                val foodColor = Color(food.color)
                 val baseRadius = cellWidth * 0.44f
 
-                // Original Green/colored translucent circular backdrop ring behind emoji
-                drawCircle(
-                    color = Color(0xFF10B981).copy(alpha = 0.35f),
-                    radius = baseRadius * 1.15f,
-                    center = Offset(fx, fy)
-                )
-
-                // Food Expiration Timer Ring (Depletes smoothly from spawn without delay or dark backgrounds)
+                // Food Expiration Timer Ring (Depletes smoothly around the realistic food)
                 val timeLeftFraction = (food.remainingLifeMs / 15000f).coerceIn(0f, 1f)
                 val ringRadius = baseRadius * 1.15f
                 if (timeLeftFraction > 0f) {
                     drawArc(
-                        color = Color(0xFF10B981).copy(alpha = 0.9f),
+                        color = Color(0xFF10B981).copy(alpha = 0.85f),
                         startAngle = -90f,
                         sweepAngle = 360f * timeLeftFraction,
                         useCenter = false,
@@ -161,18 +153,19 @@ fun GameBoardCanvas(
                     )
                 }
 
-                // Draw Crisp Emoji with Native Canvas
-                val emojiPaint = Paint().apply {
-                    textSize = cellWidth * 0.76f
-                    textAlign = Paint.Align.CENTER
-                    isAntiAlias = true
-                }
-                val metrics = emojiPaint.fontMetrics
-                val baseline = fy - (metrics.ascent + metrics.descent) / 2f
-                drawContext.canvas.nativeCanvas.drawText(food.emoji, fx, baseline, emojiPaint)
+                // Render Realistic 3D Food Graphics
+                RealisticFoodRenderer.drawRealisticFood(
+                    scope = this,
+                    food = food,
+                    cx = fx,
+                    cy = fy,
+                    cellSize = cellWidth,
+                    time = time,
+                    isPaused = isPaused
+                )
             }
 
-            // 3b. Draw Power-Up (Spawned alongside food with 10s countdown ring)
+            // 3b. Draw Realistic 3D Power-Up (Spawned alongside food with 10s countdown ring)
             if (powerUp != null) {
                 val px = powerUp.position.x * cellWidth + cellWidth / 2f + shakeX
                 val bobY = if (isPaused) 0f else sin((time + 500) / 140.0).toFloat() * (cellWidth * 0.03f)
@@ -180,13 +173,6 @@ fun GameBoardCanvas(
 
                 val powerColor = Color(powerUp.color)
                 val baseRadius = cellWidth * 0.44f
-
-                // Colored translucent circular backdrop ring behind powerup emoji
-                drawCircle(
-                    color = powerColor.copy(alpha = 0.35f),
-                    radius = baseRadius * 1.15f,
-                    center = Offset(px, py)
-                )
 
                 // Power-Up Expiration Timer Ring (10 seconds active duration)
                 val timeLeftFraction = (powerUp.remainingLifeMs / 10000f).coerceIn(0f, 1f)
@@ -203,15 +189,16 @@ fun GameBoardCanvas(
                     )
                 }
 
-                // Draw Crisp Emoji with Native Canvas
-                val emojiPaint = Paint().apply {
-                    textSize = cellWidth * 0.76f
-                    textAlign = Paint.Align.CENTER
-                    isAntiAlias = true
-                }
-                val metrics = emojiPaint.fontMetrics
-                val baseline = py - (metrics.ascent + metrics.descent) / 2f
-                drawContext.canvas.nativeCanvas.drawText(powerUp.emoji, px, baseline, emojiPaint)
+                // Render Realistic 3D Power-Up Artifact
+                RealisticFoodRenderer.drawRealisticPowerUp(
+                    scope = this,
+                    powerUp = powerUp,
+                    cx = px,
+                    cy = py,
+                    cellSize = cellWidth,
+                    time = time,
+                    isPaused = isPaused
+                )
             }
 
             // 4. Draw Snake (Clean Block-by-Block Movement with Arcade Polishing)

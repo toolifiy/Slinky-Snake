@@ -102,11 +102,11 @@ fun GamePlayScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                // 1. TOP COMPACT DARK GREY HEADER BAR (Slightly grey, clean and modern)
+                // 1. TOP COMPACT BLACK HEADER BAR (Pitch Black, fixed height so layout never shifts)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1A2234))
+                        .background(Color(0xFF000000))
                         .padding(
                             top = statusBarPadding + 2.dp,
                             bottom = 4.dp,
@@ -121,14 +121,39 @@ fun GamePlayScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Left: Game Mode / Level Title in Crisp Sky Blue
-                        Text(
-                            text = if (uiState.gameMode == GameMode.LEVELS) "LEVEL ${currentLevel.level}" else "CLASSIC ARENA",
-                            color = Color(0xFF38BDF8), // Crisp Sky Blue
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
-                        )
+                        // Left: Game Mode / Level Title OR Live Notification message in same place without shifting layout
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.weight(1f, fill = false).padding(end = 8.dp)
+                        ) {
+                            if (uiState.bannerMessage != null) {
+                                // Notification badge in place of title without shifting layout or overlapping MENU
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFF1E293B),
+                                    border = BorderStroke(1.dp, Color(0xFF6366F1))
+                                ) {
+                                    Text(
+                                        text = uiState.bannerMessage,
+                                        color = Color(0xFF38BDF8),
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                        maxLines = 1
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = if (uiState.gameMode == GameMode.LEVELS) "LEVEL ${currentLevel.level}" else "CLASSIC ARENA",
+                                    color = Color(0xFF38BDF8), // Crisp Sky Blue
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp,
+                                    maxLines = 1
+                                )
+                            }
+                        }
 
                         // Right: MENU Button (Clean Yellow / Amber Capsule)
                         Box(
@@ -369,32 +394,7 @@ fun GamePlayScreen(
                     }
                 }
 
-                // 3. NOTICE BANNER (Above Score / Highscore Bar with original theme)
-                AnimatedVisibility(
-                    visible = uiState.bannerMessage != null,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color(0xFF1E293B),
-                        border = BorderStroke(1.dp, Color(0xFF6366F1)),
-                        modifier = Modifier
-                            .padding(top = 4.dp)
-                            .testTag("game_status_sign_bar")
-                    ) {
-                        Text(
-                            text = uiState.bannerMessage ?: "",
-                            color = Color(0xFF38BDF8),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
-                            maxLines = 1
-                        )
-                    }
-                }
-
-                // 4. SCORE & HIGHSCORE BAR
+                // 2. SCORE & HIGHSCORE BAR (Directly below Game Board Canvas with zero layout shift)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
