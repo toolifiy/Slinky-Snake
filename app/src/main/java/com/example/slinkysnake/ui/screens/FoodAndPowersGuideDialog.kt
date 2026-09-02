@@ -386,7 +386,7 @@ private fun FoodGuideCard(
                         )
                     ) {
                         Text(
-                            text = if (isPower) "⚡ EQUIPPED" else "+${food.points} pts",
+                            text = if (isPower) "⚡ EQUIPPED" else "+${food.points} XP",
                             color = if (isPower) Color(0xFF38BDF8) else Color(0xFF38BDF8),
                             fontSize = if (isPower) 9.5.sp else 11.sp,
                             fontWeight = FontWeight.Black,

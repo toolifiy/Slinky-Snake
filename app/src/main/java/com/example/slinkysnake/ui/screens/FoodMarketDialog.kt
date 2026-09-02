@@ -404,7 +404,7 @@ fun FoodSellItemRow(
                         fontWeight = FontWeight.Black
                     )
                     Text(
-                        text = "• +${food.points} pts",
+                        text = "• +${food.points} XP",
                         color = Color(0xFF94A3B8),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium

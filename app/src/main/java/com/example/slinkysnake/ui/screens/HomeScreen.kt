@@ -499,7 +499,7 @@ fun HomeScreen(
 
                             if (uiState.gameMode == GameMode.LEVELS) {
                                 Text(
-                                    text = "Level Mode: Level ${currentLevel.level} – ${currentLevel.theme.name}\nTarget score: ${currentLevel.targetScore} points.",
+                                    text = "Level Mode: Level ${currentLevel.level} – ${currentLevel.theme.name}\nTarget XP: ${currentLevel.targetScore} XP.",
                                     color = Color(0xFF94A3B8),
                                     fontSize = 11.5.sp,
                                     textAlign = TextAlign.Center,
@@ -507,7 +507,7 @@ fun HomeScreen(
                                 )
                             } else {
                                 Text(
-                                    text = "Classic Mode: No limits! Eat delicious food and beat highscore!",
+                                    text = "Classic Mode: No limits! Eat delicious food and earn maximum XP!",
                                     color = Color(0xFF94A3B8),
                                     fontSize = 11.5.sp,
                                     textAlign = TextAlign.Center,

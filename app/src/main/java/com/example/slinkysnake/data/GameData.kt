@@ -486,11 +486,11 @@ object GameData {
 
     val ACHIEVEMENTS: List<Achievement> = listOf(
         Achievement("first_bite", "First Bite 🍎", "Eat your first delicious fruit.", "😋", category = "POWER", rewardCoins = 50, targetGoal = 1, accentColor = 0xFFEF4444),
-        Achievement("half_century", "Half Century 🥉", "Score at least 50 points in one game.", "🥉", category = "SCORE", rewardCoins = 60, targetGoal = 50, accentColor = 0xFFF59E0B),
-        Achievement("century", "Centurion 💯", "Reach 100 points in a single match.", "💯", category = "SCORE", rewardCoins = 100, targetGoal = 100, accentColor = 0xFF10B981),
-        Achievement("snake_master", "Snake God 👑", "Reach a massive 300 points in one game.", "👑", category = "SCORE", rewardCoins = 200, targetGoal = 300, accentColor = 0xFFFBBF24),
-        Achievement("score_500", "Viper Lord 🐉", "Reach 500 points in one thrilling run.", "🐉", category = "SCORE", rewardCoins = 350, targetGoal = 500, accentColor = 0xFF8B5CF6),
-        Achievement("score_1000", "Slytherin Emperor 💀", "Reach a legendary score of 1000 points!", "💀", category = "SCORE", rewardCoins = 500, targetGoal = 1000, accentColor = 0xFFEC4899),
+        Achievement("half_century", "Half Century 🥉", "Score at least 50 XP in one game.", "🥉", category = "SCORE", rewardCoins = 60, targetGoal = 50, accentColor = 0xFFF59E0B),
+        Achievement("century", "Centurion 💯", "Reach 100 XP in a single match.", "💯", category = "SCORE", rewardCoins = 100, targetGoal = 100, accentColor = 0xFF10B981),
+        Achievement("snake_master", "Snake God 👑", "Reach a massive 300 XP in one game.", "👑", category = "SCORE", rewardCoins = 200, targetGoal = 300, accentColor = 0xFFFBBF24),
+        Achievement("score_500", "Viper Lord 🐉", "Reach 500 XP in one thrilling run.", "🐉", category = "SCORE", rewardCoins = 350, targetGoal = 500, accentColor = 0xFF8B5CF6),
+        Achievement("score_1000", "Slytherin Emperor 💀", "Reach a legendary score of 1000 XP!", "💀", category = "SCORE", rewardCoins = 500, targetGoal = 1000, accentColor = 0xFFEC4899),
         Achievement("blue_magic", "Blue Sorcerer 🧪", "Eat a Magical Blue Booster Potion.", "🧪", category = "POWER", rewardCoins = 75, targetGoal = 1, accentColor = 0xFF3B82F6),
         Achievement("star_power", "Star Catcher ⭐", "Collect a glowing Golden Star.", "⭐", category = "POWER", rewardCoins = 80, targetGoal = 1, accentColor = 0xFFFACC15),
         Achievement("spicy_run", "Spicy Runner 🌶️", "Eat a Spicy Chili and sprint with fire trails.", "🔥", category = "POWER", rewardCoins = 80, targetGoal = 1, accentColor = 0xFFF97316),

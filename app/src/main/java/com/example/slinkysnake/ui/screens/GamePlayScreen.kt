@@ -102,11 +102,11 @@ fun GamePlayScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                // 1. TOP COMPACT BLACK HEADER BAR (Spans full width, hugs top)
+                // 1. TOP COMPACT DARK GREY HEADER BAR (Slightly grey, clean and modern)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF000000))
+                        .background(Color(0xFF1A2234))
                         .padding(
                             top = statusBarPadding + 2.dp,
                             bottom = 4.dp,
@@ -121,32 +121,14 @@ fun GamePlayScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Left: Notice in Orange (when food eaten / power up activated) or game indicator
-                        if (uiState.bannerMessage != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEA580C).copy(alpha = 0.25f),
-                                border = BorderStroke(1.dp, Color(0xFFF97316)),
-                                modifier = Modifier.testTag("game_status_sign_bar")
-                            ) {
-                                Text(
-                                    text = uiState.bannerMessage ?: "",
-                                    color = Color(0xFFFB923C), // Vibrant Orange
-                                    fontSize = 12.5.sp,
-                                    fontWeight = FontWeight.Black,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                    maxLines = 1
-                                )
-                            }
-                        } else {
-                            Text(
-                                text = if (uiState.gameMode == GameMode.LEVELS) "LEVEL ${currentLevel.level}" else "CLASSIC ARENA",
-                                color = Color(0xFFFB923C), // Sleek Orange
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
-                            )
-                        }
+                        // Left: Game Mode / Level Title in Crisp Sky Blue
+                        Text(
+                            text = if (uiState.gameMode == GameMode.LEVELS) "LEVEL ${currentLevel.level}" else "CLASSIC ARENA",
+                            color = Color(0xFF38BDF8), // Crisp Sky Blue
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
 
                         // Right: MENU Button (Clean Yellow / Amber Capsule)
                         Box(
@@ -211,7 +193,7 @@ fun GamePlayScreen(
                     )
 
                     // On-Board Pause Overlay
-                    if (uiState.isPaused && !showMenuDialog && !showExitDialog && uiState.countdown == null) {
+                    if (uiState.isPaused && !uiState.showGameOver && !showMenuDialog && !showExitDialog && uiState.countdown == null) {
                         Box(
                             modifier = Modifier
                                 .matchParentSize()
@@ -255,6 +237,111 @@ fun GamePlayScreen(
                         }
                     }
 
+                    // On-Board Game Over / Crash Card (Sleek, just like Pause card with Food & XP stats, Restart & Continue)
+                    if (uiState.showGameOver && uiState.countdown == null) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(Color.Black.copy(alpha = 0.70f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(22.dp),
+                                color = Color(0xFF1E293B),
+                                border = BorderStroke(2.5.dp, Color(0xFFEF4444)),
+                                shadowElevation = 14.dp,
+                                modifier = Modifier.padding(horizontal = 18.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = "💥 OUT / CRASHED",
+                                        color = Color(0xFFEF4444),
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 1.sp
+                                    )
+
+                                    // Food Eaten & Score Stats in sleek compact bar
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFF0F172A),
+                                        border = BorderStroke(1.dp, Color(0xFF334155))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text("🍎 FOODS EATEN", fontSize = 10.sp, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
+                                                Text("${uiState.foodEatenCount}", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+                                            }
+                                            Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color(0xFF334155)))
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text("⚡ EARNED XP", fontSize = 10.sp, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
+                                                Text("${uiState.score} XP", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFA855F7))
+                                            }
+                                        }
+                                    }
+
+                                    // Action Buttons: CONTINUE (Respawn with Shield) & RESTART
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Continue Button (Emerald Green)
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color(0xFF10B981),
+                                            modifier = Modifier
+                                                .clickable { viewModel.respawnGame() }
+                                                .testTag("continue_respawn_button")
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Text(
+                                                    text = "🛡️ CONTINUE",
+                                                    color = Color.White,
+                                                    fontSize = 12.5.sp,
+                                                    fontWeight = FontWeight.Black
+                                                )
+                                            }
+                                        }
+
+                                        // Restart Button (Amber)
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color(0xFFF59E0B),
+                                            modifier = Modifier
+                                                .clickable { viewModel.startGame() }
+                                                .testTag("restart_game_button")
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Text(
+                                                    text = "🔄 RESTART",
+                                                    color = Color(0xFF0F172A),
+                                                    fontSize = 12.5.sp,
+                                                    fontWeight = FontWeight.Black
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // On-Board 3-Second Countdown Overlay
                     if (uiState.countdown != null) {
                         Box(
@@ -282,7 +369,32 @@ fun GamePlayScreen(
                     }
                 }
 
-                // 3. SCORE & HIGHSCORE BAR (Directly aligned right beneath Game Board Box)
+                // 3. NOTICE BANNER (Above Score / Highscore Bar with original theme)
+                AnimatedVisibility(
+                    visible = uiState.bannerMessage != null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFF1E293B),
+                        border = BorderStroke(1.dp, Color(0xFF6366F1)),
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("game_status_sign_bar")
+                    ) {
+                        Text(
+                            text = uiState.bannerMessage ?: "",
+                            color = Color(0xFF38BDF8),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 3.dp),
+                            maxLines = 1
+                        )
+                    }
+                }
+
+                // 4. SCORE & HIGHSCORE BAR
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -291,7 +403,7 @@ fun GamePlayScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left: SCORE: 30 PTS
+                    // Left: SCORE: 30 XP
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "SCORE: ",
@@ -301,7 +413,7 @@ fun GamePlayScreen(
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "${uiState.score} PTS",
+                            text = "${uiState.score} XP",
                             color = Color(0xFFA855F7),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
@@ -319,7 +431,7 @@ fun GamePlayScreen(
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = if (uiState.gameMode == GameMode.LEVELS) "${currentLevel.targetScore} PTS" else "${uiState.highScore} PTS",
+                            text = if (uiState.gameMode == GameMode.LEVELS) "${currentLevel.targetScore} XP" else "${uiState.highScore} XP",
                             color = Color(0xFF10B981),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
@@ -330,7 +442,7 @@ fun GamePlayScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // 4. ARCADE CONTROLLER (At bottom above nav bar)
+                // 5. ARCADE CONTROLLER (Shifted slightly upwards)
                 ArcadeDpadControls(
                     currentDirection = uiState.direction,
                     onDirectionChange = { dir -> viewModel.onDirectionInput(dir) },
@@ -342,13 +454,19 @@ fun GamePlayScreen(
                         }
                     },
                     isPaused = uiState.isPaused,
-                    modifier = Modifier.padding(bottom = navBarPadding + 4.dp)
+                    modifier = Modifier.padding(bottom = navBarPadding + 22.dp)
                 )
             }
 
-            // In-Game Arcade Menu Popup Dialog (Clean & Simple: Resume, Restart, Exit)
+            // In-Game Arcade Menu Popup Dialog (Speed, Volume, Resume, Restart, Exit)
             if (showMenuDialog) {
                 InGameMenuDialog(
+                    speedMultiplier = uiState.speedMultiplier,
+                    isSoundEnabled = uiState.isSoundEnabled,
+                    soundVolume = uiState.soundVolume,
+                    onSpeedChange = { speed -> viewModel.setSpeedMultiplier(speed) },
+                    onSoundToggle = { enabled -> viewModel.setSoundEnabled(enabled) },
+                    onVolumeChange = { vol -> viewModel.setSoundVolume(vol) },
                     onResume = {
                         showMenuDialog = false
                         viewModel.resumeWithCountdown()
@@ -444,8 +562,8 @@ fun GamePlayScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(text = "CURRENT SCORE", color = Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                            Text(text = "${uiState.score} PTS", color = Color(0xFF10B981), fontSize = 15.sp, fontWeight = FontWeight.Black)
+                                            Text(text = "CURRENT XP", color = Color(0xFF64748B), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            Text(text = "${uiState.score} XP", color = Color(0xFF10B981), fontSize = 15.sp, fontWeight = FontWeight.Black)
                                         }
                                         Box(modifier = Modifier.width(1.dp).height(28.dp).background(Color(0xFF334155)))
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -500,103 +618,6 @@ fun GamePlayScreen(
                                         )
                                     }
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Game Over Overlay
-            if (uiState.showGameOver) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.75f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(28.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "GAME OVER 💥",
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFFEF4444)
-                            )
-
-                            if (uiState.score >= uiState.highScore && uiState.score > 0) {
-                                Surface(
-                                    shape = RoundedCornerShape(14.dp),
-                                    color = Color(0xFFF59E0B).copy(alpha = 0.2f),
-                                    border = BorderStroke(1.5.dp, Color(0xFFF59E0B))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFF59E0B))
-                                        Text(
-                                            text = "NEW HIGH SCORE! 🎉",
-                                            fontWeight = FontWeight.Black,
-                                            color = Color(0xFFF59E0B),
-                                            fontSize = 13.sp
-                                        )
-                                    }
-                                }
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Final Score", fontSize = 11.sp, color = Color(0xFF94A3B8))
-                                    Text("${uiState.score}", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
-                                }
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Foods Eaten", fontSize = 11.sp, color = Color(0xFF94A3B8))
-                                    Text("${uiState.foodEatenCount}", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color.White)
-                                }
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("Total Coins", fontSize = 11.sp, color = Color(0xFFFBBF24))
-                                    Text("🪙 ${uiState.coins}", fontSize = 20.sp, fontWeight = FontWeight.Black, color = Color(0xFFFBBF24))
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Button(
-                                onClick = { viewModel.startGame() },
-                                modifier = Modifier.fillMaxWidth().testTag("play_again_button"),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Icon(Icons.Default.Replay, contentDescription = null)
-                                    Text("PLAY AGAIN", fontWeight = FontWeight.Black)
-                                }
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.exitGame()
-                                    onBackToHome()
-                                },
-                                modifier = Modifier.fillMaxWidth().testTag("game_over_home_button"),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Text("HOME MENU", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

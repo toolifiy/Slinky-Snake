@@ -418,7 +418,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update {
             it.copy(
                 isPlaying = true,
-                isPaused = false,
+                isPaused = true,
                 showGameOver = false,
                 showLevelClear = false,
                 showVictory = false,
@@ -442,6 +442,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         launchGameLoop()
+        resumeWithCountdown()
     }
 
     fun togglePause() {
